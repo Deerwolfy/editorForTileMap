@@ -11,7 +11,7 @@
 class Button {
 public:
   Button(int x, int y, int tbPadding, int rlPadding):
-    borderColor({0x00,0x00,0x00,0xFF}), hover(false), background(false),
+    borderColor({0x00,0x00,0x00,0xFF}), hover(false), background(false), actionCode(0),
     tbPadding(tbPadding), rlPadding(rlPadding), border({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
   void setText(WindowWrapper&, const Font&, const std::string&);
   void setActionCode(int code) { actionCode = code; }
@@ -19,7 +19,8 @@ public:
   void setBackgroundColor(SDL_Color color);
   void setHoverColor(SDL_Color color) { hoverColor = color; }
   void render(WindowWrapper &w) const;
-  int event(SDL_Event&);
+  void mouseMove(SDL_Event&);
+  int click(SDL_Event&);
   void setX(int x) { border.x = x; }
   void setY(int y) { border.y = y; }
   int getX() const { return border.x; }

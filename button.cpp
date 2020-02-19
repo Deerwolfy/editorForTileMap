@@ -30,13 +30,14 @@ void Button::render(WindowWrapper &w) const
   SDL_SetRenderDrawColor(w.getRenderer(),prev.r,prev.g,prev.b,prev.a);
 }
 
-int Button::event(SDL_Event &e)
+int Button::click(SDL_Event &e)
 {
-  if(e.type == SDL_MOUSEBUTTONDOWN){
     if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},border))
       return actionCode;
-  }
-  else if(e.type == SDL_MOUSEMOTION){
+    return 0;
+}
+void Button::mouseMove(SDL_Event &e)
+{
     if(background){
       if(isCollide({e.motion.x,e.motion.y},border)){
         activeBackground = hoverColor;
@@ -45,6 +46,4 @@ int Button::event(SDL_Event &e)
       else if(hover)
         activeBackground = backgroundColor;
     }
-  }
-  return 0;
 }

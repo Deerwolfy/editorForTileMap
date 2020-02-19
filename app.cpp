@@ -79,6 +79,12 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
   buttons[3].setText(w,buttonFont,"background");
   buttons[4].setText(w,buttonFont,"load settings");
   buttons[5].setText(w,buttonFont,"save settings");
+  buttons[0].setActionCode(SAVE_LEVEL);
+  buttons[1].setActionCode(LOAD_LEVEL);
+  buttons[2].setActionCode(SPRITE_FOLDER);
+  buttons[3].setActionCode(LOAD_BACKGROUND);
+  buttons[4].setActionCode(LOAD_SETTINGS);
+  buttons[5].setActionCode(SAVE_SETTINGS);
   buttons[1].setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
   buttons[2].setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
   buttons[3].setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
@@ -106,8 +112,21 @@ void App::run()
   while(!quit){
     capTimer.start();
     while(SDL_PollEvent(&e) != 0){
-      if(e.type == SDL_QUIT)
+      if(e.type == SDL_QUIT){
         quit = true;
+      }
+      else {
+        switch(e.type){
+          case SDL_MOUSEBUTTONDOWN:
+            for(auto &b : buttons)
+              b.click(e);
+              break;
+          case SDL_MOUSEMOTION:
+            for(auto &b : buttons)
+              b.mouseMove(e);
+            break;
+        }
+      }
     }
     mainWindow.setColor(0xFF,0xFF,0xFF,0xFF);
     mainWindow.clear();
