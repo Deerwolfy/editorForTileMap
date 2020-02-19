@@ -18,7 +18,9 @@ public:
   SDL_Window *getWindow() const { return window; }
   void clear() const;
   void redraw() const { SDL_RenderPresent(renderer); }
-  void setColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a) const { SDL_SetRenderDrawColor(renderer,r,g,b,a); }
+  void setColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a = 0xFF) const { SDL_SetRenderDrawColor(renderer,r,g,b,a); }
+  void setColor(const SDL_Color &color) const { SDL_SetRenderDrawColor(renderer,color.r,color.g,color.b,color.a); }
+  SDL_Color getColor() const;
   ~WindowWrapper() { destroy(); }
 private:
   void destroy();

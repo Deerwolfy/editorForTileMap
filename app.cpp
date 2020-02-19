@@ -63,8 +63,8 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor)
 
 void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
 {
-  Font buttonFont("NotoSans-Regular.ttf", 14);
-  int hOffset = 2;
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  int hOffset = 5;
   int vOffset = 5;
   int padding = 5;
   buttons.emplace_back(hOffset,vOffset,padding,padding);
@@ -92,9 +92,19 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
   buttons[4].setY(w.getHeight()-buttons[4].getHeight()-vOffset);
   buttons[5].setY(w.getHeight()-buttons[5].getHeight()-vOffset);
   for(auto &b : buttons){
-    b.setBackgroundColor({0x72,0xC1,0xFD,0xFF});
-    b.setHoverColor({0x4C,0x8B,0xBA,0xFF});
+    b.setBackgroundColor({0x38,0x48,0x61,0xFF});
+    b.setHoverColor({0x4F,0x75,0x8A,0xFF});
   }
+}
+
+void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
+{
+  SDL_Color prev = w.getColor();
+  w.setColor(0x2B,0x37,0x4A);
+  SDL_RenderFillRect(w.getRenderer(),&menu);
+  w.setColor(0x00,0x00,0x00);
+  SDL_RenderDrawRect(w.getRenderer(),&menu);
+  w.setColor(prev);
 }
 
 void App::run()
@@ -128,10 +138,8 @@ void App::run()
         }
       }
     }
-    mainWindow.setColor(0xFF,0xFF,0xFF,0xFF);
     mainWindow.clear();
-    mainWindow.setColor(0x00,0x00,0x00,0xFF);
-    SDL_RenderDrawRect(mainWindow.getRenderer(),&menuView);
+    drawMenuBackground(mainWindow,menuView);
     for(auto &b : buttons)
       b.render(mainWindow);
     mainWindow.redraw();

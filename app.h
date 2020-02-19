@@ -17,6 +17,7 @@ private:
   void quit() const;
   void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&);
   void generateButtons(std::vector<Button>&,WindowWrapper&);
+  void drawMenuBackground(const WindowWrapper&, const SDL_Rect&) const;
   void throwError(std::string,const char*) const;
 };
 

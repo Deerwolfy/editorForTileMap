@@ -32,3 +32,10 @@ void WindowWrapper::clear() const
 {
   SDL_RenderClear(renderer);
 }
+
+SDL_Color WindowWrapper::getColor() const
+{
+  SDL_Color color;
+  SDL_GetRenderDrawColor(renderer,&color.r,&color.g,&color.b,&color.a);
+  return color;
+}

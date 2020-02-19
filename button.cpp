@@ -12,22 +12,28 @@ void Button::setBackgroundColor(SDL_Color color)
 {
   backgroundColor = color;
   activeBackground = backgroundColor;
-  background = true;
+  backgroundIsSet = true;
+}
+
+void Button::setBorderColor(SDL_Color color)
+{
+   borderColor = color;
+   borderIsSet = true;
 }
 
 void Button::render(WindowWrapper &w) const
 {
-  SDL_Color prev;
-  SDL_GetRenderDrawColor(w.getRenderer(),&prev.r,&prev.g,&prev.b,&prev.a);  
-  if(background){
-    SDL_SetRenderDrawColor(w.getRenderer(),activeBackground.r,activeBackground.g,
-        activeBackground.b,activeBackground.a);
+  SDL_Color prev = w.getColor();
+  if(backgroundIsSet){
+    w.setColor(activeBackground);
     SDL_RenderFillRect(w.getRenderer(),&border);
   }
-  SDL_SetRenderDrawColor(w.getRenderer(),borderColor.r,borderColor.g,borderColor.b,borderColor.a);
-  SDL_RenderDrawRect(w.getRenderer(),&border);
+  if(borderIsSet){
+    w.setColor(borderColor);
+    SDL_RenderDrawRect(w.getRenderer(),&border);
+  }
   text.render(w,border.x+rlPadding,border.y+tbPadding);
-  SDL_SetRenderDrawColor(w.getRenderer(),prev.r,prev.g,prev.b,prev.a);
+  w.setColor(prev);
 }
 
 int Button::click(SDL_Event &e)
@@ -38,7 +44,7 @@ int Button::click(SDL_Event &e)
 }
 void Button::mouseMove(SDL_Event &e)
 {
-    if(background){
+    if(backgroundIsSet){
       if(isCollide({e.motion.x,e.motion.y},border)){
         activeBackground = hoverColor;
         hover = true;

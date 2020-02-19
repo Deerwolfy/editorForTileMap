@@ -11,11 +11,10 @@
 class Button {
 public:
   Button(int x, int y, int tbPadding, int rlPadding):
-    borderColor({0x00,0x00,0x00,0xFF}), hover(false), background(false), actionCode(0),
     tbPadding(tbPadding), rlPadding(rlPadding), border({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
   void setText(WindowWrapper&, const Font&, const std::string&);
   void setActionCode(int code) { actionCode = code; }
-  void setBorderColor(SDL_Color color) { borderColor = color; }
+  void setBorderColor(SDL_Color);
   void setBackgroundColor(SDL_Color color);
   void setHoverColor(SDL_Color color) { hoverColor = color; }
   void render(WindowWrapper &w) const;
@@ -33,9 +32,10 @@ private:
   SDL_Color backgroundColor;
   SDL_Color hoverColor;
   SDL_Color activeBackground;
-  bool hover;
-  bool background;
-  int actionCode;
+  bool hover = false;
+  bool backgroundIsSet = false;
+  bool borderIsSet = false;
+  int actionCode = 0;
   int tbPadding;
   int rlPadding;
   SDL_Rect border;
