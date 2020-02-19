@@ -7,11 +7,16 @@
 #include"timer.h"
 #include"button.h"
 #include"font.h"
-#include<iostream>
+#include"spriteLoadCallback.h"
 #include<vector>
+#include<map>
+#include<iostream>
 
 constexpr double TicksPerFrame = 1000.0/60.0;
 
+struct Callbacks {
+  SpriteLoadCallback spriteLoad;
+};
 
 void App::init() const
 {
@@ -39,7 +44,7 @@ void App::throwError(std::string msg, const char *sdlMsg) const
   throw std::runtime_error(msg.append(sdlMsg)); 
 }
 
-void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor)
+void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
 {
   menu.x = 0;
   menu.y = 0;
@@ -49,10 +54,9 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor)
   editor.y = 0;
   editor.w = w.getWidth()-menu.w;
   editor.h = w.getHeight();
-
 }
 
-void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
+void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w, Callbacks callbacks) const
 {
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
   int hOffset = 5;
@@ -67,7 +71,7 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
   buttons[0].setText(w,buttonFont,"save level");
   buttons[1].setText(w,buttonFont,"load level")
     .setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
-  buttons[2].setText(w,buttonFont,"sprite folder")
+  buttons[2].setText(w,buttonFont,"sprite folder").setLeftClickCallback(callbacks.spriteLoad)
     .setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
   buttons[3].setText(w,buttonFont,"background")
     .setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
@@ -91,6 +95,11 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
+void App::generateMenu(std::map<int,Texture> &textures, WindowWrapper &w) const
+{
+
+}
+
 void App::run()
 {
   WindowWrapper mainWindow(1366,768);
@@ -99,9 +108,12 @@ void App::run()
   Timer capTimer;
   SDL_Rect menuView;
   SDL_Rect editorView;
+  std::map<int,Texture> idToTexture;
+  std::map<int,std::string> idToName;
   defineViews(mainWindow,menuView,editorView);
   std::vector<Button> buttons;
-  generateButtons(buttons,mainWindow);
+  bool regenerateMenu = false;
+  generateButtons(buttons,mainWindow,{SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu)});
   bool quit = false;
   while(!quit){
     capTimer.start();
@@ -113,7 +125,10 @@ void App::run()
         switch(e.type){
           case SDL_MOUSEBUTTONDOWN:
             for(auto &b : buttons)
-              b.leftClick(e);
+              if(b.leftClick(e))
+                break;
+              if(regenerateMenu)
+                generateMenu(idToTexture,mainWindow);
               break;
           case SDL_MOUSEMOTION:
             for(auto &b : buttons)

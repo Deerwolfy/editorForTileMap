@@ -24,8 +24,8 @@ public:
     { rightClickCallback = callback; return *this; }
   void render(WindowWrapper &w) const;
   void mouseMove(SDL_Event&);
-  void leftClick(SDL_Event&);
-  void rightClick(SDL_Event&);
+  int leftClick(SDL_Event&);
+  int rightClick(SDL_Event&);
   Button &setX(int x) { frame.x = x; return *this; }
   Button &setY(int y) { frame.y = y; return *this; }
   int getX() const { return frame.x; }

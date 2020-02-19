@@ -10,6 +10,8 @@
 #include<string>
 #include<map>
 
+struct Callbacks;
+
 class App {
 public:
   App() { init(); }
@@ -18,10 +20,10 @@ public:
 private:
   void init() const;
   void quit() const;
-  void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&);
-  void generateButtons(std::vector<Button>&,WindowWrapper&);
+  void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&) const;
+  void generateButtons(std::vector<Button>&,WindowWrapper&,Callbacks) const;
   void drawMenuBackground(const WindowWrapper&, const SDL_Rect&) const;
-  void loadSprites(std::map<int,Texture>&, std::map<int,std::string>&);
+  void generateMenu(std::map<int,Texture>&,WindowWrapper&) const;
   void throwError(std::string,const char*) const;
 };
 

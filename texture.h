@@ -18,7 +18,7 @@ public:
   void loadText(WindowWrapper&, const Font&, const std::string&);
   int getWidth() const { return width; }
   int getHeight() const { return height; }
-  void render(WindowWrapper &w, int x, int y, const SDL_Rect *clip = nullptr, double angle = 0,
+  void render(WindowWrapper &w, int x, int y, double scaleCoef = 1, const SDL_Rect *clip = nullptr, double angle = 0,
               const SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
   bool isEmpty() const { return texture == nullptr; }
 private:

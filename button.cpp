@@ -39,18 +39,24 @@ void Button::render(WindowWrapper &w) const
   w.setColor(prev);
 }
 
-void Button::leftClick(SDL_Event &e)
+int Button::leftClick(SDL_Event &e)
 {
-    if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
-      if(leftClickCallback)
-        leftClickCallback(*this);
+  if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
+    if(leftClickCallback){
+      leftClickCallback(*this);
+      return 1;
+    }
+  return 0;
 }
 
-void Button::rightClick(SDL_Event &e)
+int Button::rightClick(SDL_Event &e)
 {
-    if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
-      if(rightClickCallback)
-        rightClickCallback(*this);
+  if(e.button.button == SDL_BUTTON_RIGHT && isCollide({e.button.x,e.button.y},frame))
+    if(rightClickCallback){
+      rightClickCallback(*this);
+      return 1;
+    }
+  return 0;
 }
 
 void Button::mouseMove(SDL_Event &e)
