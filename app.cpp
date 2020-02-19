@@ -12,15 +12,6 @@
 
 constexpr double TicksPerFrame = 1000.0/60.0;
 
-enum {
-  NO_ACTION,
-  LOAD_LEVEL,
-  SAVE_LEVEL,
-  SPRITE_FOLDER,
-  LOAD_BACKGROUND,
-  SAVE_SETTINGS,
-  LOAD_SETTINGS
-};
 
 void App::init() const
 {
@@ -74,23 +65,16 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w)
   buttons.emplace_back(hOffset,0,padding,padding);
   buttons.emplace_back(0,0,padding,padding);
   buttons[0].setText(w,buttonFont,"save level");
-  buttons[1].setText(w,buttonFont,"load level");
-  buttons[2].setText(w,buttonFont,"sprite folder");
-  buttons[3].setText(w,buttonFont,"background");
-  buttons[4].setText(w,buttonFont,"load settings");
-  buttons[5].setText(w,buttonFont,"save settings");
-  buttons[0].setActionCode(SAVE_LEVEL);
-  buttons[1].setActionCode(LOAD_LEVEL);
-  buttons[2].setActionCode(SPRITE_FOLDER);
-  buttons[3].setActionCode(LOAD_BACKGROUND);
-  buttons[4].setActionCode(LOAD_SETTINGS);
-  buttons[5].setActionCode(SAVE_SETTINGS);
-  buttons[1].setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
-  buttons[2].setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
-  buttons[3].setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
-  buttons[5].setX(buttons[4].getX()+buttons[4].getWidth()+hOffset);
-  buttons[4].setY(w.getHeight()-buttons[4].getHeight()-vOffset);
-  buttons[5].setY(w.getHeight()-buttons[5].getHeight()-vOffset);
+  buttons[1].setText(w,buttonFont,"load level")
+    .setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
+  buttons[2].setText(w,buttonFont,"sprite folder")
+    .setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
+  buttons[3].setText(w,buttonFont,"background")
+    .setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
+  buttons[4].setText(w,buttonFont,"load settings")
+    .setY(w.getHeight()-buttons[4].getHeight()-vOffset);
+  buttons[5].setText(w,buttonFont,"save settings")
+    .setX(buttons[4].getX()+buttons[4].getWidth()+hOffset).setY(w.getHeight()-buttons[5].getHeight()-vOffset);
   for(auto &b : buttons){
     b.setBackgroundColor({0x38,0x48,0x61,0xFF});
     b.setHoverColor({0x4F,0x75,0x8A,0xFF});
@@ -129,7 +113,7 @@ void App::run()
         switch(e.type){
           case SDL_MOUSEBUTTONDOWN:
             for(auto &b : buttons)
-              b.click(e);
+              b.leftClick(e);
               break;
           case SDL_MOUSEMOTION:
             for(auto &b : buttons)

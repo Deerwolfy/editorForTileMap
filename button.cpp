@@ -1,24 +1,27 @@
 #include"button.h"
 #include"collisionDetector.h"
 
-void Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
+Button &Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
 {
   text.loadText(w,font,t);
-  border.w += text.getWidth();
-  border.h += text.getHeight();
+  frame.w += text.getWidth();
+  frame.h += text.getHeight();
+  return *this;
 }
 
-void Button::setBackgroundColor(SDL_Color color)
+Button &Button::setBackgroundColor(SDL_Color color)
 {
   backgroundColor = color;
   activeBackground = backgroundColor;
   backgroundIsSet = true;
+  return *this;
 }
 
-void Button::setBorderColor(SDL_Color color)
+Button &Button::setBorderColor(SDL_Color color)
 {
    borderColor = color;
    borderIsSet = true;
+   return *this;
 }
 
 void Button::render(WindowWrapper &w) const
@@ -26,26 +29,34 @@ void Button::render(WindowWrapper &w) const
   SDL_Color prev = w.getColor();
   if(backgroundIsSet){
     w.setColor(activeBackground);
-    SDL_RenderFillRect(w.getRenderer(),&border);
+    SDL_RenderFillRect(w.getRenderer(),&frame);
   }
   if(borderIsSet){
     w.setColor(borderColor);
-    SDL_RenderDrawRect(w.getRenderer(),&border);
+    SDL_RenderDrawRect(w.getRenderer(),&frame);
   }
-  text.render(w,border.x+rlPadding,border.y+tbPadding);
+  text.render(w,frame.x+rlPadding,frame.y+tbPadding);
   w.setColor(prev);
 }
 
-int Button::click(SDL_Event &e)
+void Button::leftClick(SDL_Event &e)
 {
-    if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},border))
-      return actionCode;
-    return 0;
+    if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
+      if(leftClickCallback)
+        leftClickCallback(*this);
 }
+
+void Button::rightClick(SDL_Event &e)
+{
+    if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
+      if(rightClickCallback)
+        rightClickCallback(*this);
+}
+
 void Button::mouseMove(SDL_Event &e)
 {
     if(backgroundIsSet){
-      if(isCollide({e.motion.x,e.motion.y},border)){
+      if(isCollide({e.motion.x,e.motion.y},frame)){
         activeBackground = hoverColor;
         hover = true;
       }
