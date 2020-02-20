@@ -8,6 +8,7 @@
 #include"button.h"
 #include"font.h"
 #include"spriteLoadCallback.h"
+#include"collisionDetector.h"
 #include<vector>
 #include<map>
 #include<iostream>
@@ -95,9 +96,28 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
-void App::generateMenu(std::map<int,Texture> &textures, WindowWrapper &w) const
+void App::generateMenu(std::map<int,Texture> &textures,std::map<int, std::string> &names, WindowWrapper &w, std::vector<Button> &buttons) const
 {
-
+  int currentX = 20;
+  int currentY = 40;
+  int padding = 5;
+  int margin = 5;
+  int maxWidth = 0;
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  for(const auto &t : textures){
+    buttons.emplace_back(currentX,currentY,padding,padding);
+    Button &current = buttons.back();
+    current.setText(w,buttonFont,names[t.first]);
+    current.setIcon(t.second,5);
+    currentY += current.getHeight() + margin;
+    current.setBackgroundColor({0x38,0x48,0x61,0xFF});
+    current.setHoverColor({0x4F,0x75,0x8A,0xFF});
+    current.setButtonId(t.first);
+    if(current.getWidth() > maxWidth)
+      maxWidth = current.getWidth();
+  }
+  for(auto &b : buttons)
+    b.setRightPadding(padding + maxWidth - b.getWidth());
 }
 
 void App::run()
@@ -112,6 +132,7 @@ void App::run()
   std::map<int,std::string> idToName;
   defineViews(mainWindow,menuView,editorView);
   std::vector<Button> buttons;
+  std::vector<Button> menuButtons;
   bool regenerateMenu = false;
   generateButtons(buttons,mainWindow,{SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu)});
   bool quit = false;
@@ -125,21 +146,28 @@ void App::run()
         switch(e.type){
           case SDL_MOUSEBUTTONDOWN:
             for(auto &b : buttons)
-              if(b.leftClick(e))
-                break;
-              if(regenerateMenu)
-                generateMenu(idToTexture,mainWindow);
+              if(b.leftClick(e)) break;
+              if(regenerateMenu){
+                generateMenu(idToTexture,idToName,mainWindow,menuButtons);
+                regenerateMenu = false;
+              }
               break;
           case SDL_MOUSEMOTION:
-            for(auto &b : buttons)
-              b.mouseMove(e);
+            if(isCollide({e.button.x, e.button.y}, menuView)){
+              for(auto &b : buttons)
+                b.mouseMove(e);
+              for(auto &b : menuButtons)
+                b.mouseMove(e);
+            }
             break;
         }
       }
     }
     mainWindow.clear();
     drawMenuBackground(mainWindow,menuView);
-    for(auto &b : buttons)
+    for(const auto &b : buttons)
+      b.render(mainWindow);
+    for(const auto &b : menuButtons)
       b.render(mainWindow);
     mainWindow.redraw();
     if(capTimer.getTicks() < TicksPerFrame)

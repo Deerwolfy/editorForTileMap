@@ -12,7 +12,8 @@
 class Button {
 public:
   Button(int x, int y, int tbPadding, int rlPadding):
-    tbPadding(tbPadding), rlPadding(rlPadding), frame({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
+    topPadding(tbPadding), bottomPadding(tbPadding), rightPadding(rlPadding), leftPadding(rlPadding), 
+    frame({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
   Button &setText(WindowWrapper&, const Font&, const std::string&);
   Button &setButtonId(int id) { buttonId = id; return *this; }
   Button &setBorderColor(SDL_Color);
@@ -22,12 +23,17 @@ public:
     { leftClickCallback = callback; return *this; }
   Button &setRightClickCallback(std::function<void(const Button&)> callback)
     { rightClickCallback = callback; return *this; }
+  Button &setIcon(const Texture&, int iconRightPadding = 0);
   void render(WindowWrapper &w) const;
   void mouseMove(SDL_Event&);
-  int leftClick(SDL_Event&);
-  int rightClick(SDL_Event&);
+  int leftClick(SDL_Event&) const;
+  int rightClick(SDL_Event&) const;
   Button &setX(int x) { frame.x = x; return *this; }
   Button &setY(int y) { frame.y = y; return *this; }
+  Button &setTopPadding(int);
+  Button &setBottomPadding(int);
+  Button &setRightPadding(int);
+  Button &setLeftPadding(int);
   int getX() const { return frame.x; }
   int getY() const { return frame.y; }
   int getWidth() const { return frame.w; }
@@ -36,12 +42,18 @@ private:
   bool hover = false;
   bool backgroundIsSet = false;
   bool borderIsSet = false;
+  bool iconIsSet = false;
   int buttonId = 0;
-  int tbPadding;
-  int rlPadding;
+  int textOffsetY = 0;
+  int textOffsetX = 0;
+  int topPadding;
+  int bottomPadding;
+  int rightPadding;
+  int leftPadding;
   std::function<void(const Button&)> leftClickCallback;
   std::function<void(const Button&)> rightClickCallback;
   Texture text;
+  Texture icon;
   SDL_Color borderColor;
   SDL_Color backgroundColor;
   SDL_Color hoverColor;

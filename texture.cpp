@@ -43,14 +43,10 @@ void Texture::loadText(WindowWrapper &w, const Font &font, const std::string &te
   SDL_FreeSurface(surface);
 }
 
-void Texture::render(WindowWrapper &w, int x, int y, double scaleCoef, const SDL_Rect *clip, double angle,
+void Texture::render(WindowWrapper &w, int x, int y, const SDL_Rect *clip, double angle,
                            const SDL_Point *center, SDL_RendererFlip flip) const
 {
   SDL_Rect renderRect = { x, y, width, height };
-  if(scaleCoef != 1){
-    renderRect.w *= scaleCoef;
-    renderRect.h *= scaleCoef;
-  }
   if(clip != nullptr){
     renderRect.w = clip->w;
     renderRect.h = clip->h;
