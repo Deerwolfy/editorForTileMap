@@ -69,16 +69,16 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w, Callba
   buttons.emplace_back(0,vOffset,padding,padding);
   buttons.emplace_back(hOffset,0,padding,padding);
   buttons.emplace_back(0,0,padding,padding);
-  buttons[0].setText(w,buttonFont,"save level");
-  buttons[1].setText(w,buttonFont,"load level")
+  buttons[0].setText(w,buttonFont,"Save level");
+  buttons[1].setText(w,buttonFont,"Load level")
     .setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
-  buttons[2].setText(w,buttonFont,"sprite folder").setLeftClickCallback(callbacks.spriteLoad)
+  buttons[2].setText(w,buttonFont,"Sprite folder").setLeftClickCallback(callbacks.spriteLoad)
     .setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
-  buttons[3].setText(w,buttonFont,"background")
+  buttons[3].setText(w,buttonFont,"Background")
     .setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
-  buttons[4].setText(w,buttonFont,"load settings")
+  buttons[4].setText(w,buttonFont,"Load settings")
     .setY(w.getHeight()-buttons[4].getHeight()-vOffset);
-  buttons[5].setText(w,buttonFont,"save settings")
+  buttons[5].setText(w,buttonFont,"Save settings")
     .setX(buttons[4].getX()+buttons[4].getWidth()+hOffset).setY(w.getHeight()-buttons[5].getHeight()-vOffset);
   for(auto &b : buttons){
     b.setBackgroundColor({0x38,0x48,0x61});

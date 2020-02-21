@@ -7,6 +7,7 @@ Button &Button::setText(WindowWrapper &w, const Font &font, const std::string &t
   text.loadText(w,font,t);
   frame.w += text.getWidth();
   frame.h += text.getHeight();
+  textIsSet = true;
   return *this;
 }
 
@@ -23,6 +24,13 @@ Button &Button::setBorderColor(SDL_Color color)
    borderColor = color;
    borderIsSet = true;
    return *this;
+}
+
+Button &Button::setHoverColor(SDL_Color color)
+{
+  hoverColor = color;
+  hoverIsSet = true;
+  return *this;
 }
 
 Button &Button::setIcon(const Texture &iconTexture, int iconRightPadding)
@@ -78,10 +86,10 @@ void Button::render(WindowWrapper &w) const
     w.setColor(borderColor);
     SDL_RenderDrawRect(w.getRenderer(),&frame);
   }
-  if(iconIsSet){
+  if(iconIsSet)
     icon.render(w,frame.x+leftPadding,frame.y+topPadding);
-  }
-  text.render(w,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
+  if(textIsSet)
+    text.render(w,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
   w.setColor(prev);
 }
 
@@ -107,7 +115,7 @@ int Button::rightClick(SDL_Event &e) const
 
 void Button::mouseMove(SDL_Event &e)
 {
-  if(backgroundIsSet){
+  if(backgroundIsSet && hoverIsSet){
     if(isCollide({e.motion.x,e.motion.y},frame)){
       activeBackground = hoverColor;
       hover = true;

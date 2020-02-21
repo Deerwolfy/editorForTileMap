@@ -24,13 +24,18 @@ void SpriteLoadCallback::operator()(const Button&)
     std::string fileName(data.cFileName);
     if(fileName == "." || fileName == ".." || fileName.length() <= formatLength)
       continue;
-    std::string format = fileName.substr(fileName.length() - formatLength, formatLength);
+    auto formatIndex = fileName.find_last_of(".");
+    std::string format;
+    if(formatIndex != std::string::npos)
+      format = fileName.substr(formatIndex, formatLength);
     if(format == ".png" || format == ".jpg"){
       std::cout << "Loading " << path + fileName << std::endl;
       idToTexture.emplace(std::make_pair(spriteCount,Texture(w,path + fileName)));
       idToName.emplace(std::make_pair(spriteCount,fileName));
       ++spriteCount;
     }
+    else
+      std::cout << "Unsupported format: " << format << std::endl;
   } while(FindNextFileA(dHandle,&data) != 0);
   regenerate = true;
   FindClose(dHandle);

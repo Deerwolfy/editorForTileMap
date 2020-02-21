@@ -17,14 +17,14 @@ public:
   Button &setText(WindowWrapper&, const Font&, const std::string&);
   Button &setButtonId(int id) { buttonId = id; return *this; }
   Button &setBorderColor(SDL_Color);
-  Button &setBackgroundColor(SDL_Color color);
-  Button &setHoverColor(SDL_Color color) { hoverColor = color; return *this; }
+  Button &setBackgroundColor(SDL_Color);
+  Button &setHoverColor(SDL_Color);
   Button &setLeftClickCallback(std::function<void(const Button&)> callback)
     { leftClickCallback = callback; return *this; }
   Button &setRightClickCallback(std::function<void(const Button&)> callback)
     { rightClickCallback = callback; return *this; }
   Button &setIcon(const Texture&, int iconRightPadding = 0);
-  void render(WindowWrapper &w) const;
+  void render(WindowWrapper&) const;
   void mouseMove(SDL_Event&);
   int leftClick(SDL_Event&) const;
   int rightClick(SDL_Event&) const;
@@ -43,6 +43,8 @@ private:
   bool backgroundIsSet = false;
   bool borderIsSet = false;
   bool iconIsSet = false;
+  bool textIsSet = false;
+  bool hoverIsSet = false;
   int buttonId = 0;
   int textOffsetY = 0;
   int textOffsetX = 0;
