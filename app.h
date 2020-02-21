@@ -9,6 +9,7 @@
 #include<vector>
 #include<string>
 #include<map>
+#include"listMenu.h"
 
 struct Callbacks;
 
@@ -21,7 +22,7 @@ private:
   void init() const;
   void quit() const;
   void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&) const;
-  void generateButtons(std::vector<Button>&,WindowWrapper&,Callbacks) const;
+  void generateButtons(ListMenu&,WindowWrapper&,Callbacks) const;
   void drawMenuBackground(const WindowWrapper&, const SDL_Rect&) const;
   void generateMenu(std::map<int,Texture>&,std::map<int,std::string>&,WindowWrapper&,
                     std::vector<Button>&,const SDL_Rect&) const;

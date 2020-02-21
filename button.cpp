@@ -105,7 +105,7 @@ void Button::render(WindowWrapper &w) const
   w.setColor(prev);
 }
 
-int Button::leftClick(SDL_Event &e) const
+int Button::leftClick(const SDL_Event &e) const
 {
   if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
     if(leftClickCallback){
@@ -115,7 +115,7 @@ int Button::leftClick(SDL_Event &e) const
   return 0;
 }
 
-int Button::rightClick(SDL_Event &e) const
+int Button::rightClick(const SDL_Event &e) const
 {
   if(e.button.button == SDL_BUTTON_RIGHT && isCollide({e.button.x,e.button.y},frame))
     if(rightClickCallback){
@@ -125,7 +125,7 @@ int Button::rightClick(SDL_Event &e) const
   return 0;
 }
 
-void Button::mouseMove(SDL_Event &e)
+void Button::mouseMove(const SDL_Event &e)
 {
   if(backgroundIsSet && hoverIsSet){
     if(isCollide({e.motion.x,e.motion.y},frame)){

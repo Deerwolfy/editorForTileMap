@@ -12,11 +12,14 @@
 #include<vector>
 #include<map>
 #include<iostream>
+#include<functional>
+#include"listMenu.h"
 
 constexpr double TicksPerFrame = 1000.0/60.0;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
+  std::function<void()> blockButtonsWhileListOpen;
 };
 
 void App::init() const
@@ -57,33 +60,19 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
   editor.h = w.getHeight();
 }
 
-void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w, Callbacks callbacks) const
+void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbacks) const
 {
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
-  int hOffset = 5;
-  int vOffset = 5;
-  int padding = 5;
-  buttons.emplace_back(hOffset,vOffset,padding,padding);
-  buttons.emplace_back(0,vOffset,padding,padding);
-  buttons.emplace_back(0,vOffset,padding,padding);
-  buttons.emplace_back(0,vOffset,padding,padding);
-  buttons.emplace_back(hOffset,0,padding,padding);
-  buttons.emplace_back(0,0,padding,padding);
-  buttons[0].setText(w,buttonFont,"Save level");
-  buttons[1].setText(w,buttonFont,"Load level")
-    .setX(buttons[0].getX()+buttons[0].getWidth()+hOffset);
-  buttons[2].setText(w,buttonFont,"Sprite folder").setLeftClickCallback(callbacks.spriteLoad)
-    .setX(buttons[1].getX()+buttons[1].getWidth()+hOffset);
-  buttons[3].setText(w,buttonFont,"Background")
-    .setX(buttons[2].getX()+buttons[2].getWidth()+hOffset);
-  buttons[4].setText(w,buttonFont,"Load settings")
-    .setY(w.getHeight()-buttons[4].getHeight()-vOffset);
-  buttons[5].setText(w,buttonFont,"Save settings")
-    .setX(buttons[4].getX()+buttons[4].getWidth()+hOffset).setY(w.getHeight()-buttons[5].getHeight()-vOffset);
-  for(auto &b : buttons){
-    b.setBackgroundColor({0x38,0x48,0x61});
-    b.setHoverColor({0x4F,0x75,0x8A});
-  }
+  buttons.setTitle(w,buttonFont,"Application");
+  buttons.setListButtonClickCallback(callbacks.blockButtonsWhileListOpen);
+  buttons.setBackgroundColor({0x1D,0x24,0x30});
+  buttons.setHoverColor({0x4F,0x75,0x8A});
+  buttons.addEntry(w,buttonFont,"Sprite Folder",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Save level",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Load level",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Editor background",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Save settings",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Load Settings",callbacks.spriteLoad);
 }
 
 void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
@@ -136,11 +125,16 @@ void App::run()
   std::map<int,Texture> idToTexture;
   std::map<int,std::string> idToName;
   defineViews(mainWindow,menuView,editorView);
-  std::vector<Button> buttons;
+  ListMenu buttonList(5,5,3,5);
   std::vector<Button> menuButtons;
+  bool listOpen = false;
   bool regenerateMenu = false;
-  generateButtons(buttons,mainWindow,{
-    SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu)
+  generateButtons(buttonList,mainWindow,{
+    SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu),
+    [&listOpen] ()->void {if(listOpen) 
+                            listOpen = false;
+                          else
+                            listOpen = true; }
   });
   bool quit = false;
   while(!quit){
@@ -152,19 +146,25 @@ void App::run()
       else {
         switch(e.type){
           case SDL_MOUSEBUTTONDOWN:
-            for(auto &b : buttons)
-              if(b.leftClick(e)) break;
+              if(!buttonList.leftClick(e)){
+                buttonList.hide();
+                listOpen = false;
+              }
               if(regenerateMenu){
                 generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView);
                 regenerateMenu = false;
               }
+              if(!listOpen){
+
+              }
               break;
           case SDL_MOUSEMOTION:
             if(isCollide({e.button.x, e.button.y}, menuView)){
-              for(auto &b : buttons)
-                b.mouseMove(e);
-              for(auto &b : menuButtons)
-                b.mouseMove(e);
+              buttonList.mouseMove(e);
+              if(!listOpen){
+                for(auto &b : menuButtons)
+                  b.mouseMove(e);
+              }
             }
             break;
         }
@@ -172,10 +172,9 @@ void App::run()
     }
     mainWindow.clear();
     drawMenuBackground(mainWindow,menuView);
-    for(const auto &b : buttons)
-      b.render(mainWindow);
     for(const auto &b : menuButtons)
       b.render(mainWindow);
+    buttonList.render(mainWindow);
     mainWindow.redraw();
     if(capTimer.getTicks() < TicksPerFrame)
       SDL_Delay(TicksPerFrame - capTimer.getTicks());
