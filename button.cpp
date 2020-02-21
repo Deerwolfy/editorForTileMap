@@ -105,9 +105,38 @@ void Button::render(WindowWrapper &w) const
   w.setColor(prev);
 }
 
+void Button::render(WindowWrapper &w, SDL_Rect camera) const
+{
+  SDL_Color prev = w.getColor();
+  SDL_Rect relativeFrame = {frame.x-camera.x,frame.y-camera.y,frame.w,frame.h};
+  if(backgroundIsSet){
+    w.setColor(activeBackground);
+    SDL_RenderFillRect(w.getRenderer(),&relativeFrame);
+  }
+  if(borderIsSet){
+    w.setColor(borderColor);
+    SDL_RenderDrawRect(w.getRenderer(),&relativeFrame);
+  }
+  if(iconIsSet)
+    icon.render(w,frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
+  if(textIsSet)
+    text.render(w,frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
+  w.setColor(prev);
+}
+
 int Button::leftClick(const SDL_Event &e) const
 {
   if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
+    if(leftClickCallback){
+      leftClickCallback(*this);
+      return 1;
+    }
+  return 0;
+}
+
+int Button::leftClick(const SDL_Event &e, SDL_Rect camera) const
+{
+  if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x+camera.x,e.button.y+camera.y},frame))
     if(leftClickCallback){
       leftClickCallback(*this);
       return 1;
@@ -125,10 +154,36 @@ int Button::rightClick(const SDL_Event &e) const
   return 0;
 }
 
+int Button::rightClick(const SDL_Event &e, SDL_Rect camera) const
+{
+  if(e.button.button == SDL_BUTTON_RIGHT && isCollide({e.button.x+camera.x,e.button.y+camera.y},frame))
+    if(rightClickCallback){
+      rightClickCallback(*this);
+      return 1;
+    }
+  return 0;
+}
+
 void Button::mouseMove(const SDL_Event &e)
 {
   if(backgroundIsSet && hoverIsSet){
-    if(isCollide({e.motion.x,e.motion.y},frame)){
+    int x,y;
+    SDL_GetMouseState(&x,&y);
+    if(isCollide({x,y},frame)){
+      activeBackground = hoverColor;
+      hover = true;
+    }
+    else if(hover)
+      activeBackground = backgroundColor;
+  }
+}
+
+void Button::mouseMove(const SDL_Event &e, SDL_Rect camera)
+{
+  if(backgroundIsSet && hoverIsSet){
+    int x,y;
+    SDL_GetMouseState(&x,&y);
+    if(isCollide({x+camera.x,y+camera.y},frame)){
       activeBackground = hoverColor;
       hover = true;
     }

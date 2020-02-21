@@ -16,6 +16,8 @@
 #include"listMenu.h"
 
 constexpr double TicksPerFrame = 1000.0/60.0;
+constexpr int TileMenuItemsMargin = 5;
+constexpr int TileMenuYOffset = 40;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -89,22 +91,22 @@ void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::strin
                        std::vector<Button> &buttons, const SDL_Rect &parent) const
 {
   int offsetX = 20;
-  int currentY = 40;
+  int currentY = TileMenuYOffset;
   int padding = 5;
-  int margin = 5;
   int iconWidth = 32;
   int iconHeight = 32;
   int iconSep = 5;
   int buttonWidth = parent.w - offsetX - offsetX;
   int maxTextWidth = buttonWidth-padding-padding-iconWidth-iconSep;
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
+  buttons.clear();
   for(const auto &t : textures){
     buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
     current.setTextAreaWidth(maxTextWidth);
     current.setText(w,buttonFont,names[t.first]);
     current.setIcon(t.second,iconWidth,iconHeight,iconSep);
-    currentY += current.getHeight() + margin;
+    currentY += current.getHeight() + TileMenuItemsMargin;
     current.setBackgroundColor({0x38,0x48,0x61});
     current.setHoverColor({0x4F,0x75,0x8A});
     current.setBorderColor({0x00,0x00,0x00});
@@ -119,9 +121,14 @@ void App::run()
   WindowWrapper mainWindow(1366,768);
   mainWindow.show();
   SDL_Event e;
+  int mouseX;
+  int mouseY;
+  const int tileMenuScrollSpeed = 20;
   Timer capTimer;
   SDL_Rect menuView;
   SDL_Rect editorView;
+  SDL_Rect tileMenu = {0,0,mainWindow.getWidth()-TileMenuYOffset,mainWindow.getHeight()-TileMenuYOffset};
+  SDL_Rect tileMenuCamera = tileMenu;
   std::map<int,Texture> idToTexture;
   std::map<int,std::string> idToName;
   defineViews(mainWindow,menuView,editorView);
@@ -129,6 +136,7 @@ void App::run()
   std::vector<Button> menuButtons;
   bool listOpen = false;
   bool regenerateMenu = false;
+  int menuButtonsHeight = 0;
   generateButtons(buttonList,mainWindow,{
     SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu),
     [&listOpen] ()->void {if(listOpen) 
@@ -152,28 +160,49 @@ void App::run()
               }
               if(regenerateMenu){
                 generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView);
+                menuButtonsHeight = TileMenuYOffset;
+                for(const auto &b : menuButtons)
+                  menuButtonsHeight += b.getHeight() + TileMenuItemsMargin;
                 regenerateMenu = false;
               }
               if(!listOpen){
 
               }
-              break;
+          break;
           case SDL_MOUSEMOTION:
-            if(isCollide({e.button.x, e.button.y}, menuView)){
+            SDL_GetMouseState(&mouseX,&mouseY);
+            if(isCollide({mouseX, mouseY}, menuView)){
               buttonList.mouseMove(e);
               if(!listOpen){
                 for(auto &b : menuButtons)
-                  b.mouseMove(e);
+                  b.mouseMove(e,tileMenuCamera);
               }
             }
-            break;
+          break;
+          case SDL_MOUSEWHEEL:
+            SDL_GetMouseState(&mouseX,&mouseY);
+            if(e.wheel.y > 0){
+              if(isCollide({mouseX, mouseY}, menuView)){
+                if(tileMenuCamera.y >= tileMenuScrollSpeed)
+                  tileMenuCamera.y -= tileMenuScrollSpeed;
+              }
+            }
+            else if(e.wheel.y < 0){
+              if(isCollide({mouseX, mouseY}, menuView)){
+                if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
+                  tileMenuCamera.y += tileMenuScrollSpeed;
+              }
+            }
+          break;
         }
       }
     }
     mainWindow.clear();
     drawMenuBackground(mainWindow,menuView);
+    mainWindow.setViewport(&tileMenu);
     for(const auto &b : menuButtons)
-      b.render(mainWindow);
+      b.render(mainWindow,tileMenuCamera);
+    mainWindow.setViewport();
     buttonList.render(mainWindow);
     mainWindow.redraw();
     if(capTimer.getTicks() < TicksPerFrame)

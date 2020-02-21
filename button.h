@@ -26,9 +26,13 @@ public:
   Button &setIcon(const Texture&, int width = 32, int height = 32, int iconRightPadding = 0);
   Button &setTextAreaWidth(int width) { textAreaWidth = width; return *this; };
   void render(WindowWrapper&) const;
+  void render(WindowWrapper&,SDL_Rect) const;
   void mouseMove(const SDL_Event&);
+  void mouseMove(const SDL_Event&, SDL_Rect);
   int leftClick(const SDL_Event&) const;
+  int leftClick(const SDL_Event&, SDL_Rect) const;
   int rightClick(const SDL_Event&) const;
+  int rightClick(const SDL_Event&, SDL_Rect) const;
   Button &setX(int x) { frame.x = x; return *this; }
   Button &setY(int y) { frame.y = y; return *this; }
   Button &setTopPadding(int);

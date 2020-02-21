@@ -20,6 +20,7 @@ public:
   void redraw() const { SDL_RenderPresent(renderer); }
   void setColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a = 0xFF) const { SDL_SetRenderDrawColor(renderer,r,g,b,a); }
   void setColor(const SDL_Color &color) const { SDL_SetRenderDrawColor(renderer,color.r,color.g,color.b,color.a); }
+  void setViewport(SDL_Rect *viewport = nullptr) const { SDL_RenderSetViewport(renderer,viewport); }
   SDL_Color getColor() const;
   ~WindowWrapper() { destroy(); }
 private:
