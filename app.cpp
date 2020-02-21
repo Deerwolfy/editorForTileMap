@@ -59,7 +59,7 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
 
 void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w, Callbacks callbacks) const
 {
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
   int hOffset = 5;
   int vOffset = 5;
   int padding = 5;
@@ -81,8 +81,8 @@ void App::generateButtons(std::vector<Button> &buttons, WindowWrapper &w, Callba
   buttons[5].setText(w,buttonFont,"save settings")
     .setX(buttons[4].getX()+buttons[4].getWidth()+hOffset).setY(w.getHeight()-buttons[5].getHeight()-vOffset);
   for(auto &b : buttons){
-    b.setBackgroundColor({0x38,0x48,0x61,0xFF});
-    b.setHoverColor({0x4F,0x75,0x8A,0xFF});
+    b.setBackgroundColor({0x38,0x48,0x61});
+    b.setHoverColor({0x4F,0x75,0x8A});
   }
 }
 
@@ -103,15 +103,16 @@ void App::generateMenu(std::map<int,Texture> &textures,std::map<int, std::string
   int padding = 5;
   int margin = 5;
   int maxWidth = 0;
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
   for(const auto &t : textures){
     buttons.emplace_back(currentX,currentY,padding,padding);
     Button &current = buttons.back();
     current.setText(w,buttonFont,names[t.first]);
     current.setIcon(t.second,5);
     currentY += current.getHeight() + margin;
-    current.setBackgroundColor({0x38,0x48,0x61,0xFF});
-    current.setHoverColor({0x4F,0x75,0x8A,0xFF});
+    current.setBackgroundColor({0x38,0x48,0x61});
+    current.setHoverColor({0x4F,0x75,0x8A});
+    current.setBorderColor({0x00,0x00,0x00});
     current.setButtonId(t.first);
     if(current.getWidth() > maxWidth)
       maxWidth = current.getWidth();

@@ -22,7 +22,9 @@ public:
               const SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
   bool isEmpty() const { return texture == nullptr; }
 private:
+  void updateTextureFromSurface(WindowWrapper&);
   std::shared_ptr<SDL_Texture> texture;
+  std::shared_ptr<SDL_Surface> surface;
   int width;
   int height;
 };

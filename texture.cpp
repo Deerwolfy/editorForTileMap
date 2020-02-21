@@ -4,23 +4,28 @@
 
 void Texture::loadImg(WindowWrapper &w, const std::string &path)
 {
-  SDL_Surface *surface = nullptr;
-  surface = IMG_Load(path.c_str());
-  if(surface == nullptr){
+  std::shared_ptr<SDL_Surface> tempSurf(IMG_Load(path.c_str()),SDL_FreeSurface);
+  if(tempSurf == nullptr){
     std::cout << "Failed to load image " << path <<
                  " reason: " << IMG_GetError() << std::endl;
     return;
   }
-  std::shared_ptr<SDL_Texture> tempPtr(SDL_CreateTextureFromSurface(w.getRenderer(),surface),
+  surface = tempSurf;
+  updateTextureFromSurface(w);
+}
+
+void Texture::updateTextureFromSurface(WindowWrapper &w)
+{
+  std::shared_ptr<SDL_Texture> tempTexture(SDL_CreateTextureFromSurface(w.getRenderer(),surface.get()),
     SDL_DestroyTexture);
-  if(tempPtr == nullptr){
+  if(tempTexture == nullptr){
     std::cout << "Failed to create texture, reason: " << SDL_GetError() << std::endl;
     return;
   }
-  texture = tempPtr;
+  texture = tempTexture;
+  SDL_SetTextureBlendMode(texture.get(),SDL_BLENDMODE_BLEND);
   width = surface->w;
   height = surface->h;
-  SDL_FreeSurface(surface);
 }
 
 void Texture::loadText(WindowWrapper &w, const Font &font, const std::string &text)
