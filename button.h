@@ -24,6 +24,7 @@ public:
   Button &setRightClickCallback(std::function<void(const Button&)> callback)
     { rightClickCallback = callback; return *this; }
   Button &setIcon(const Texture&, int width = 32, int height = 32, int iconRightPadding = 0);
+  Button &setTextAreaWidth(int width) { textAreaWidth = width; return *this; };
   void render(WindowWrapper&) const;
   void mouseMove(SDL_Event&);
   int leftClick(SDL_Event&) const;
@@ -52,6 +53,7 @@ private:
   int bottomPadding;
   int rightPadding;
   int leftPadding;
+  int textAreaWidth = -1;
   std::function<void(const Button&)> leftClickCallback;
   std::function<void(const Button&)> rightClickCallback;
   Texture text;

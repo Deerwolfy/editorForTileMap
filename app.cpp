@@ -112,15 +112,8 @@ void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::strin
   for(const auto &t : textures){
     buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
-    std::string text = names[t.first];
-    auto size = buttonFont.getTextWH(text);
-    if(size.first >= maxTextWidth){
-      int perChar = size.first/text.length();
-      int numOfChars = maxTextWidth/perChar;
-      text = text.substr(0,numOfChars-4);
-      text.append("...");
-    }
-    current.setText(w,buttonFont,text);
+    current.setTextAreaWidth(maxTextWidth);
+    current.setText(w,buttonFont,names[t.first]);
     current.setIcon(t.second,iconWidth,iconHeight,iconSep);
     currentY += current.getHeight() + margin;
     current.setBackgroundColor({0x38,0x48,0x61});

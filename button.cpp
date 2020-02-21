@@ -4,8 +4,20 @@
 
 Button &Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
 {
-  text.loadText(w,font,t);
-  frame.w += text.getWidth();
+  int textWidth = font.getTextWH(t).first;
+  std::string newText = t;
+  if(textAreaWidth != -1){
+    frame.w += textAreaWidth;
+    if(textWidth >= textAreaWidth){
+      int perChar = textWidth/newText.length();
+      int numOfChars = textAreaWidth/perChar;
+      newText = newText.substr(0,numOfChars-4);
+      newText.append("...");
+    }
+  }
+  else
+    frame.w += textWidth;
+  text.loadText(w,font,newText);
   frame.h += text.getHeight();
   textIsSet = true;
   return *this;
