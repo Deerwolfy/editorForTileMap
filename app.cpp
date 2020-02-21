@@ -96,29 +96,40 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
-void App::generateMenu(std::map<int,Texture> &textures,std::map<int, std::string> &names, WindowWrapper &w, std::vector<Button> &buttons) const
+void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::string> &names, WindowWrapper &w,
+                       std::vector<Button> &buttons, const SDL_Rect &parent) const
 {
-  int currentX = 20;
+  int offsetX = 20;
   int currentY = 40;
   int padding = 5;
   int margin = 5;
-  int maxWidth = 0;
+  int iconWidth = 32;
+  int iconHeight = 32;
+  int iconSep = 5;
+  int buttonWidth = parent.w - offsetX - offsetX;
+  int maxTextWidth = buttonWidth-padding-padding-iconWidth-iconSep;
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
   for(const auto &t : textures){
-    buttons.emplace_back(currentX,currentY,padding,padding);
+    buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
-    current.setText(w,buttonFont,names[t.first]);
-    current.setIcon(t.second,5);
+    std::string text = names[t.first];
+    auto size = buttonFont.getTextWH(text);
+    if(size.first >= maxTextWidth){
+      int perChar = size.first/text.length();
+      int numOfChars = maxTextWidth/perChar;
+      text = text.substr(0,numOfChars-4);
+      text.append("...");
+    }
+    current.setText(w,buttonFont,text);
+    current.setIcon(t.second,iconWidth,iconHeight,iconSep);
     currentY += current.getHeight() + margin;
     current.setBackgroundColor({0x38,0x48,0x61});
     current.setHoverColor({0x4F,0x75,0x8A});
     current.setBorderColor({0x00,0x00,0x00});
     current.setButtonId(t.first);
-    if(current.getWidth() > maxWidth)
-      maxWidth = current.getWidth();
   }
   for(auto &b : buttons)
-    b.setRightPadding(padding + maxWidth - b.getWidth());
+    b.setRightPadding(buttonWidth - b.getWidth());
 }
 
 void App::run()
@@ -135,7 +146,9 @@ void App::run()
   std::vector<Button> buttons;
   std::vector<Button> menuButtons;
   bool regenerateMenu = false;
-  generateButtons(buttons,mainWindow,{SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu)});
+  generateButtons(buttons,mainWindow,{
+    SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu)
+  });
   bool quit = false;
   while(!quit){
     capTimer.start();
@@ -149,7 +162,7 @@ void App::run()
             for(auto &b : buttons)
               if(b.leftClick(e)) break;
               if(regenerateMenu){
-                generateMenu(idToTexture,idToName,mainWindow,menuButtons);
+                generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView);
                 regenerateMenu = false;
               }
               break;

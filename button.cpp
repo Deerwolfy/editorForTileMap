@@ -33,7 +33,7 @@ Button &Button::setHoverColor(SDL_Color color)
   return *this;
 }
 
-Button &Button::setIcon(const Texture &iconTexture, int iconRightPadding)
+Button &Button::setIcon(const Texture &iconTexture,  int scaleX, int scaleY, int iconRightPadding)
 {
   if(iconTexture.getWidth() > 32 || iconTexture.getHeight() > 32){
     std::cout << "Only support icons up to 32 pixels" << std::endl;

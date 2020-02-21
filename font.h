@@ -5,6 +5,7 @@
 #include<SDL_ttf.h>
 #include<memory>
 #include<string>
+#include<utility>
 
 class Font {
 public:
@@ -12,6 +13,7 @@ public:
   void loadFont(const std::string&);
   SDL_Color getColor() const { return color; }
   std::shared_ptr<TTF_Font> getFont() const { return font; }
+  std::pair<int,int> getTextWH(const std::string&) const;
 private:
   SDL_Color color;
   int size;

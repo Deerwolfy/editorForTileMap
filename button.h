@@ -23,7 +23,7 @@ public:
     { leftClickCallback = callback; return *this; }
   Button &setRightClickCallback(std::function<void(const Button&)> callback)
     { rightClickCallback = callback; return *this; }
-  Button &setIcon(const Texture&, int iconRightPadding = 0);
+  Button &setIcon(const Texture&, int width = 32, int height = 32, int iconRightPadding = 0);
   void render(WindowWrapper&) const;
   void mouseMove(SDL_Event&);
   int leftClick(SDL_Event&) const;
