@@ -21,7 +21,11 @@ public:
   void render(WindowWrapper &w, int x, int y, const SDL_Rect *clip = nullptr, double angle = 0,
               const SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
   bool isEmpty() const { return texture == nullptr; }
+  Texture resizeCopy(WindowWrapper&,int,int) const;
+  Texture copy(WindowWrapper&) const;
 private:
+  Texture(WindowWrapper&,std::shared_ptr<SDL_Surface>);
+  Uint8 lerp(Uint8,Uint8,double,double,double) const;
   void updateTextureFromSurface(WindowWrapper&);
   std::shared_ptr<SDL_Texture> texture;
   std::shared_ptr<SDL_Surface> surface;
