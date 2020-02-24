@@ -11,12 +11,12 @@
 class ListMenu {
 public:
   ListMenu(int,int,int,int);
-  ListMenu &setTitle(WindowWrapper&,const Font&,const std::string&);
-  ListMenu &addEntry(WindowWrapper&,const Font&, const std::string&,std::function<void(const Button&)>);
-  ListMenu &setBackgroundColor(SDL_Color);
-  ListMenu &setHoverColor(SDL_Color);
-  ListMenu &setBorderColor(SDL_Color);
-  ListMenu &setListButtonClickCallback(std::function<void()>);
+  void setTitle(WindowWrapper&,const Font&,const std::string&);
+  void addEntry(WindowWrapper&,const Font&, const std::string&,std::function<void(const Button&)>);
+  void setBackgroundColor(SDL_Color);
+  void setHoverColor(SDL_Color);
+  void setBorderColor(SDL_Color);
+  void setListButtonClickCallback(std::function<void()>);
   void hide() { shown = false; }
   void show() { shown = true; }
   void render(WindowWrapper&) const;

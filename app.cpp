@@ -93,19 +93,19 @@ void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::strin
   int offsetX = 20;
   int currentY = TileMenuYOffset;
   int padding = 5;
-  int iconWidth = 32;
-  int iconHeight = 32;
+  int iconMaxSide = 32;
   int iconSep = 5;
   int buttonWidth = parent.w - offsetX - offsetX;
-  int maxTextWidth = buttonWidth-padding-padding-iconWidth-iconSep;
+  int maxTextWidth;
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
   buttons.clear();
   for(const auto &t : textures){
     buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
+    auto iconDimensions = current.setIcon(w,t.second,iconMaxSide,iconSep);
+    maxTextWidth = buttonWidth-padding-padding-iconDimensions.first-iconSep;
     current.setTextAreaWidth(maxTextWidth);
     current.setText(w,buttonFont,names[t.first]);
-    current.setIcon(t.second,iconWidth,iconHeight,iconSep);
     currentY += current.getHeight() + TileMenuItemsMargin;
     current.setBackgroundColor({0x38,0x48,0x61});
     current.setHoverColor({0x4F,0x75,0x8A});

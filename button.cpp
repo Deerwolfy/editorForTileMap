@@ -2,7 +2,7 @@
 #include"collisionDetector.h"
 #include<iostream>
 
-Button &Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
+void Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
 {
   int textWidth = font.getTextWH(t).first;
   std::string newText = t;
@@ -18,38 +18,50 @@ Button &Button::setText(WindowWrapper &w, const Font &font, const std::string &t
   else
     frame.w += textWidth;
   text.loadText(w,font,newText);
-  frame.h += text.getHeight();
+  if(iconIsSet){
+    if(text.getHeight() > icon.getHeight())
+      frame.h += text.getHeight() - icon.getHeight();
+    textOffsetY = icon.getHeight()/2 - text.getHeight()/2;
+  }
+  else {
+    frame.h += text.getHeight();
+  }
   textIsSet = true;
-  return *this;
 }
 
-Button &Button::setBackgroundColor(SDL_Color color)
+void Button::setBackgroundColor(SDL_Color color)
 {
   backgroundColor = color;
   activeBackground = backgroundColor;
   backgroundIsSet = true;
-  return *this;
 }
 
-Button &Button::setBorderColor(SDL_Color color)
+void Button::setBorderColor(SDL_Color color)
 {
    borderColor = color;
    borderIsSet = true;
-   return *this;
 }
 
-Button &Button::setHoverColor(SDL_Color color)
+void Button::setHoverColor(SDL_Color color)
 {
   hoverColor = color;
   hoverIsSet = true;
-  return *this;
 }
 
-Button &Button::setIcon(const Texture &iconTexture,  int scaleX, int scaleY, int iconRightPadding)
+std::pair<int,int> Button::setIcon(WindowWrapper &w, Texture iconTexture,  int maxDimension, int iconRightPadding)
 {
-  if(iconTexture.getWidth() > 32 || iconTexture.getHeight() > 32){
-    std::cout << "Only support icons up to 32 pixels" << std::endl;
-    return *this;
+  if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){
+    if(iconTexture.getWidth() > iconTexture.getHeight()){
+      double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
+      iconTexture.resize(w,maxDimension,maxDimension*ratio);
+    }
+    else if(iconTexture.getWidth() < iconTexture.getHeight()){
+      double ratio = iconTexture.getWidth()/static_cast<double>(iconTexture.getHeight());
+      iconTexture.resize(w,maxDimension*ratio,maxDimension);
+    }
+    else{
+      iconTexture.resize(w,maxDimension,maxDimension);
+    }
   }
   icon = iconTexture;
   if(text.getHeight() < iconTexture.getHeight()){
@@ -59,32 +71,28 @@ Button &Button::setIcon(const Texture &iconTexture,  int scaleX, int scaleY, int
   textOffsetX = iconTexture.getWidth() + rightPadding;
   textOffsetY = iconTexture.getHeight()/2 - text.getHeight()/2;
   iconIsSet = true;
-  return *this;
+  return std::make_pair(iconTexture.getWidth(),iconTexture.getHeight());
 }
 
-Button &Button::setTopPadding(int padding)
+void Button::setTopPadding(int padding)
 {
   topPadding = padding;
   frame.h += padding;
-  return *this;
 }
-Button &Button::setBottomPadding(int padding)
+void Button::setBottomPadding(int padding)
 {
   bottomPadding = padding;
   frame.h += padding;
-  return *this;
 }
-Button &Button::setRightPadding(int padding)
+void Button::setRightPadding(int padding)
 {
   rightPadding = padding;
   frame.w += padding;
-  return *this;
 }
-Button &Button::setLeftPadding(int padding)
+void Button::setLeftPadding(int padding)
 {
   leftPadding = padding;
   frame.w += padding;
-  return *this;
 }
 
 void Button::render(WindowWrapper &w) const

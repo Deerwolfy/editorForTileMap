@@ -5,25 +5,23 @@
 ListMenu::ListMenu(int x, int y, int tbPadding, int rlPadding):
     mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), frame({x,currentY,0,0}) { }
 
-ListMenu &ListMenu::setListButtonClickCallback(std::function<void()> callback)
+void ListMenu::setListButtonClickCallback(std::function<void()> callback)
 {
   mainButton.setLeftClickCallback([callback,this] (const Button&)->void {
       if(shown) shown = false;
       else shown = true;
       callback();
     });
-    return *this;
 }
 
-ListMenu &ListMenu::setTitle(WindowWrapper &w, const Font &font, const std::string &title)
+void ListMenu::setTitle(WindowWrapper &w, const Font &font, const std::string &title)
 {
   mainButton.setText(w,font,title);
   currentY = mainButton.getHeight() + mainButton.getY();
   frame.y = currentY;
-  return *this;
 }
 
-ListMenu &ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::string &text,
+void ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::string &text,
                             std::function<void(const Button&)> callback)
 {
   menuButtons.emplace_back(frame.x,currentY,mainButton.getTopPadding(),mainButton.getLeftPadding());
@@ -46,37 +44,33 @@ ListMenu &ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::stri
     current.setHoverColor(hover);
   if(borderIsSet)
     current.setBorderColor(border);
-  return *this;
 }
 
-ListMenu &ListMenu::setBackgroundColor(SDL_Color color)
+void ListMenu::setBackgroundColor(SDL_Color color)
 {
   mainButton.setBackgroundColor(color);
   for(auto &b : menuButtons)
     b.setBackgroundColor(color);
   background = color;
   backgroundIsSet = true;
-  return *this;
 }
 
-ListMenu &ListMenu::setBorderColor(SDL_Color color)
+void ListMenu::setBorderColor(SDL_Color color)
 {
   mainButton.setBorderColor(color);
   for(auto &b : menuButtons)
     b.setBorderColor(color);
   border = color;
   borderIsSet = true;
-  return *this;
 }
 
-ListMenu &ListMenu::setHoverColor(SDL_Color color)
+void ListMenu::setHoverColor(SDL_Color color)
 {
   mainButton.setHoverColor(color);
   for(auto &b : menuButtons)
     b.setHoverColor(color);
   hover = color;
   hoverIsSet = true;
-  return *this;
 }
 
 void ListMenu::render(WindowWrapper &w) const

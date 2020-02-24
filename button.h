@@ -8,23 +8,24 @@
 #include<functional>
 #include<string>
 #include<memory>
+#include<utility>
 
 class Button {
 public:
   Button(int x, int y, int tbPadding, int rlPadding):
     topPadding(tbPadding), bottomPadding(tbPadding), rightPadding(rlPadding), leftPadding(rlPadding), 
     frame({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
-  Button &setText(WindowWrapper&, const Font&, const std::string&);
-  Button &setButtonId(int id) { buttonId = id; return *this; }
-  Button &setBorderColor(SDL_Color);
-  Button &setBackgroundColor(SDL_Color);
-  Button &setHoverColor(SDL_Color);
-  Button &setLeftClickCallback(std::function<void(const Button&)> callback)
-    { leftClickCallback = callback; return *this; }
-  Button &setRightClickCallback(std::function<void(const Button&)> callback)
-    { rightClickCallback = callback; return *this; }
-  Button &setIcon(const Texture&, int width = 32, int height = 32, int iconRightPadding = 0);
-  Button &setTextAreaWidth(int width) { textAreaWidth = width; return *this; };
+  void setText(WindowWrapper&, const Font&, const std::string&);
+  void setButtonId(int id) { buttonId = id; }
+  void setBorderColor(SDL_Color);
+  void setBackgroundColor(SDL_Color);
+  void setHoverColor(SDL_Color);
+  void setLeftClickCallback(std::function<void(const Button&)> callback)
+    { leftClickCallback = callback; }
+  void setRightClickCallback(std::function<void(const Button&)> callback)
+    { rightClickCallback = callback; }
+  std::pair<int,int> setIcon(WindowWrapper&, Texture, int maxDimension = 32, int iconRightPadding = 0);
+  void setTextAreaWidth(int width) { textAreaWidth = width; };
   void render(WindowWrapper&) const;
   void render(WindowWrapper&,SDL_Rect) const;
   void mouseMove(const SDL_Event&);
@@ -33,12 +34,12 @@ public:
   int leftClick(const SDL_Event&, SDL_Rect) const;
   int rightClick(const SDL_Event&) const;
   int rightClick(const SDL_Event&, SDL_Rect) const;
-  Button &setX(int x) { frame.x = x; return *this; }
-  Button &setY(int y) { frame.y = y; return *this; }
-  Button &setTopPadding(int);
-  Button &setBottomPadding(int);
-  Button &setRightPadding(int);
-  Button &setLeftPadding(int);
+  void setX(int x) { frame.x = x; }
+  void setY(int y) { frame.y = y; }
+  void setTopPadding(int);
+  void setBottomPadding(int);
+  void setRightPadding(int);
+  void setLeftPadding(int);
   int getRightPadding() const { return rightPadding; }
   int getLeftPadding() const { return leftPadding; }
   int getTopPadding() const { return topPadding; }
