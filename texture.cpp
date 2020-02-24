@@ -108,10 +108,10 @@ void Texture::resize(WindowWrapper &window, int w, int h)
     for(int destX = 0; destX < w; ++destX){
       sourceX = destX * ratioX;
       ix = static_cast<int>(sourceX);
-      pointA = sourcePixels[ix+iy*sourcePixelsPerLine];
-      pointB = sourcePixels[(ix+1)+iy*sourcePixelsPerLine];
-      pointC = sourcePixels[(ix+1)+(iy+1)*sourcePixelsPerLine];
-      pointD = sourcePixels[ix+(iy+1)*sourcePixelsPerLine];
+      pointA = getSourcePixel(sourceSurf,ix,iy);
+      pointB = getSourcePixel(sourceSurf,ix+1,iy);
+      pointC = getSourcePixel(sourceSurf,ix+1,iy+1);
+      pointD = getSourcePixel(sourceSurf,ix,iy+1);
       SDL_GetRGBA(pointA,sourceSurf.get()->format,&colorsA.r,&colorsA.g,&colorsA.b,&colorsA.a);
       SDL_GetRGBA(pointB,sourceSurf.get()->format,&colorsB.r,&colorsB.g,&colorsB.b,&colorsB.a);
       SDL_GetRGBA(pointC,sourceSurf.get()->format,&colorsC.r,&colorsC.g,&colorsC.b,&colorsC.a);
@@ -134,4 +134,13 @@ void Texture::resize(WindowWrapper &window, int w, int h)
 Uint8 Texture::lerp(Uint8 fLeft, Uint8 fRight, double left, double right, double target) const
 {
   return (right-target)/(right-left)*fLeft+(target-left)/(right-left)*fRight;
+}
+
+Uint32 Texture::getSourcePixel(std::shared_ptr<SDL_Surface> surf, int x, int y) const
+{
+  if(x >= surf.get()->w)
+    x -= x-surf.get()->w+1;
+  if(y >= surf.get()->h)
+    y -= y-surf.get()->h+1;
+  return static_cast<Uint32*>(surf.get()->pixels)[x+y*surf.get()->pitch/4];
 }
