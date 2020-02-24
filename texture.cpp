@@ -31,8 +31,8 @@ void Texture::updateTextureFromSurface(WindowWrapper &w)
   }
   texture = tempTexture;
   SDL_SetTextureBlendMode(texture.get(),SDL_BLENDMODE_BLEND);
-  width = surface->w;
-  height = surface->h;
+  width = surface.get()->w;
+  height = surface.get()->h;
 }
 
 void Texture::loadText(WindowWrapper &w, const Font &font, const std::string &text)
@@ -73,6 +73,10 @@ void Texture::resize(WindowWrapper &window, int w, int h)
   if(w <= 0 || h <= 0){
     std::cout << "Destination texture size must be bigger than zero. Current: "
     << w << "x" << h << std::endl;
+    return;
+  }
+  if(surface == nullptr){
+    std::cout << "No texture to resize" << std::endl;
     return;
   }
   std::shared_ptr<SDL_Surface> destSurf(SDL_CreateRGBSurfaceWithFormat(0,w,h,32,SDL_PIXELFORMAT_RGBA32),SDL_FreeSurface);
