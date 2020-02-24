@@ -68,10 +68,13 @@ Texture Texture::copy(WindowWrapper &w) const
   return Texture(w,surface);
 }
 
-Texture Texture::resizeCopy(WindowWrapper &window, int w, int h) const
+void Texture::resize(WindowWrapper &window, int w, int h)
 {
-  if(w <= 0 || h <= 0)
-    return Texture(window,surface);
+  if(w <= 0 || h <= 0){
+    std::cout << "Destination texture size must be bigger than zero. Current: "
+    << w << "x" << h << std::endl;
+    return;
+  }
   std::shared_ptr<SDL_Surface> destSurf(SDL_CreateRGBSurfaceWithFormat(0,w,h,32,SDL_PIXELFORMAT_RGBA32),SDL_FreeSurface);
   std::shared_ptr<SDL_Surface> sourceSurf(SDL_ConvertSurfaceFormat(surface.get(),SDL_PIXELFORMAT_RGBA32,0),SDL_FreeSurface);
   SDL_LockSurface(destSurf.get());
@@ -120,7 +123,8 @@ Texture Texture::resizeCopy(WindowWrapper &window, int w, int h) const
   SDL_UnlockSurface(sourceSurf.get());
   sourcePixels = nullptr;
   destPixels = nullptr;
-  return Texture(window,destSurf);
+  surface = destSurf;
+  updateTextureFromSurface(window);
 }
 
 Uint8 Texture::lerp(Uint8 fLeft, Uint8 fRight, double left, double right, double target) const
