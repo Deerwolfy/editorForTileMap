@@ -110,16 +110,16 @@ void Texture::resize(WindowWrapper &window, int w, int h)
       ix = static_cast<int>(sourceX);
       pointA = getSourcePixel(sourceSurf,ix,iy);
       pointB = getSourcePixel(sourceSurf,ix+1,iy);
-      pointC = getSourcePixel(sourceSurf,ix+1,iy+1);
-      pointD = getSourcePixel(sourceSurf,ix,iy+1);
+      pointC = getSourcePixel(sourceSurf,ix,iy+1);
+      pointD = getSourcePixel(sourceSurf,ix+1,iy+1);
       SDL_GetRGBA(pointA,sourceSurf.get()->format,&colorsA.r,&colorsA.g,&colorsA.b,&colorsA.a);
       SDL_GetRGBA(pointB,sourceSurf.get()->format,&colorsB.r,&colorsB.g,&colorsB.b,&colorsB.a);
       SDL_GetRGBA(pointC,sourceSurf.get()->format,&colorsC.r,&colorsC.g,&colorsC.b,&colorsC.a);
       SDL_GetRGBA(pointD,sourceSurf.get()->format,&colorsD.r,&colorsD.g,&colorsD.b,&colorsD.a);
-      outColors.r = lerp(lerp(colorsA.r,colorsB.r,ix,ix+1,sourceX),lerp(colorsC.r,colorsD.r,ix,ix+1,sourceX),iy,iy+1,sourceY);
-      outColors.g = lerp(lerp(colorsA.g,colorsB.g,ix,ix+1,sourceX),lerp(colorsC.g,colorsD.g,ix,ix+1,sourceX),iy,iy+1,sourceY);
-      outColors.b = lerp(lerp(colorsA.b,colorsB.b,ix,ix+1,sourceX),lerp(colorsC.b,colorsD.b,ix,ix+1,sourceX),iy,iy+1,sourceY);
-      outColors.a = lerp(lerp(colorsA.a,colorsB.a,ix,ix+1,sourceX),lerp(colorsC.a,colorsD.a,ix,ix+1,sourceX),iy,iy+1,sourceY);
+      outColors.r = lerp(lerp(colorsA.r,colorsB.r,sourceX-ix),lerp(colorsC.r,colorsD.r,sourceX-ix),sourceY-iy);
+      outColors.g = lerp(lerp(colorsA.g,colorsB.g,sourceX-ix),lerp(colorsC.g,colorsD.g,sourceX-ix),sourceY-iy);
+      outColors.b = lerp(lerp(colorsA.b,colorsB.b,sourceX-ix),lerp(colorsC.b,colorsD.b,sourceX-ix),sourceY-iy);
+      outColors.a = lerp(lerp(colorsA.a,colorsB.a,sourceX-ix),lerp(colorsC.a,colorsD.a,sourceX-ix),sourceY-iy);
       destPixels[destX+destY*destPixelsPerLine] = SDL_MapRGBA(destSurf.get()->format,outColors.r,outColors.g,outColors.b,outColors.a);
     }
   }
@@ -131,9 +131,9 @@ void Texture::resize(WindowWrapper &window, int w, int h)
   updateTextureFromSurface(window);
 }
 
-Uint8 Texture::lerp(Uint8 fLeft, Uint8 fRight, double left, double right, double target) const
+Uint8 Texture::lerp(Uint8 left, Uint8 right, double target) const
 {
-  return (right-target)/(right-left)*fLeft+(target-left)/(right-left)*fRight;
+  return (1-target)*left + target*right;
 }
 
 Uint32 Texture::getSourcePixel(std::shared_ptr<SDL_Surface> surf, int x, int y) const

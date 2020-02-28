@@ -65,7 +65,7 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
 void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbacks) const
 {
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
-  buttons.setTitle(w,buttonFont,"Application");
+  buttons.setTitle(w,buttonFont,"Editor");
   buttons.setListButtonClickCallback(callbacks.blockButtonsWhileListOpen);
   buttons.setBackgroundColor({0x1D,0x24,0x30});
   buttons.setHoverColor({0x4F,0x75,0x8A});

@@ -26,7 +26,7 @@ public:
 private:
   Texture(WindowWrapper&,std::shared_ptr<SDL_Surface>);
   Uint32 getSourcePixel(std::shared_ptr<SDL_Surface>,int,int) const;
-  Uint8 lerp(Uint8,Uint8,double,double,double) const;
+  Uint8 lerp(Uint8,Uint8,double) const;
   void updateTextureFromSurface(WindowWrapper&);
   std::shared_ptr<SDL_Texture> texture;
   std::shared_ptr<SDL_Surface> surface;
