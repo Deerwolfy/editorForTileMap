@@ -48,6 +48,7 @@ public:
   int getY() const { return frame.y; }
   int getWidth() const { return frame.w; }
   int getHeight() const { return frame.h; }
+  int getId() const { return buttonId; }
 private:
   bool hover = false;
   bool backgroundIsSet = false;

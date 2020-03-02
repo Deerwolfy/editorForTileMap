@@ -8,6 +8,7 @@
 #include"button.h"
 #include"font.h"
 #include"spriteLoadCallback.h"
+#include"changeTileIdCallback.h"
 #include"collisionDetector.h"
 #include<vector>
 #include<map>
@@ -88,7 +89,8 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
 }
 
 void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::string> &names, WindowWrapper &w,
-                       std::vector<Button> &buttons, const SDL_Rect &parent) const
+                       std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
+                       std::function<void(const Button&)> rightCallback) const
 {
   int offsetX = 20;
   int currentY = TileMenuOffset;
@@ -124,6 +126,7 @@ void App::run()
   int mouseX;
   int mouseY;
   const int tileMenuScrollSpeed = 20;
+  int currentTile = 0;
   Timer capTimer;
   SDL_Rect menuView;
   SDL_Rect editorView;
@@ -159,7 +162,10 @@ void App::run()
                 listOpen = false;
               }
               if(regenerateMenu){
-                generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView);
+                generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView,
+                  [&currentTile](const Button &b)->void{ currentTile = b.getId();},
+                  ChangeTileIdCallback(mainWindow,idToTexture,idToName)
+                );
                 menuButtonsHeight = TileMenuOffset;
                 for(const auto &b : menuButtons)
                   menuButtonsHeight += b.getHeight() + TileMenuItemsMargin;
