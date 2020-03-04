@@ -19,7 +19,8 @@
 
 constexpr double TicksPerFrame = 1000.0/60.0;
 constexpr int TileMenuItemsMargin = 5;
-constexpr int TileMenuOffset = 40;
+constexpr int TileMenuYOffset = 40;
+constexpr int TilemenuXOffset = 20;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -93,8 +94,8 @@ void App::generateMenu(std::map<int,std::pair<Texture,std::string>> &textureName
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
                        std::function<void(const Button&)> rightCallback) const
 {
-  int offsetX = 20;
-  int currentY = TileMenuOffset;
+  int offsetX = TilemenuXOffset;
+  int currentY = TileMenuYOffset;
   int padding = 5;
   int iconMaxSide = 32;
   int iconSep = 5;
@@ -131,10 +132,10 @@ void App::run()
   Timer capTimer;
   SDL_Rect menuView;
   SDL_Rect editorView;
-  SDL_Rect tileMenu = {0,TileMenuOffset,mainWindow.getWidth()-TileMenuOffset,mainWindow.getHeight()-(TileMenuOffset+TileMenuOffset)};
-  SDL_Rect tileMenuCamera = tileMenu;
-  std::map<int,std::pair<Texture,std::string>> idToTextureName;
   defineViews(mainWindow,menuView,editorView);
+  SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
+  SDL_Rect tileMenuCamera = {0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset};
+  std::map<int,std::pair<Texture,std::string>> idToTextureName;
   ListMenu buttonList(5,5,3,5);
   std::vector<Button> menuButtons;
   bool listOpen = false;
@@ -166,7 +167,7 @@ void App::run()
                   [&currentTile](const Button &b)->void{ currentTile = b.getId();},
                   ChangeTileIdCallback(mainWindow,idToTextureName)
                 );
-                menuButtonsHeight = TileMenuOffset;
+                menuButtonsHeight = TileMenuYOffset;
                 for(const auto &b : menuButtons)
                   menuButtonsHeight += b.getHeight() + TileMenuItemsMargin;
                 regenerateMenu = false;
@@ -189,7 +190,7 @@ void App::run()
             SDL_GetMouseState(&mouseX,&mouseY);
             if(e.wheel.y > 0){
               if(isCollide({mouseX, mouseY}, menuView)){
-                if(tileMenuCamera.y >= tileMenuScrollSpeed && tileMenuCamera.y > tileMenu.y)
+                if(tileMenuCamera.y >= tileMenuScrollSpeed)
                   tileMenuCamera.y -= tileMenuScrollSpeed;
               }
             }
@@ -205,10 +206,10 @@ void App::run()
     }
     mainWindow.clear();
     drawMenuBackground(mainWindow,menuView);
-    mainWindow.setViewport(&tileMenu);
+    mainWindow.setClip(&tileMenu);
     for(const auto &b : menuButtons)
       b.render(mainWindow,tileMenuCamera);
-    mainWindow.setViewport();
+    mainWindow.setClip();
     buttonList.render(mainWindow);
     mainWindow.redraw();
     if(capTimer.getTicks() < TicksPerFrame)

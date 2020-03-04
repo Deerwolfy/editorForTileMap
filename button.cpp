@@ -115,13 +115,13 @@ void Button::render(WindowWrapper &w) const
 
 void Button::render(WindowWrapper &w, SDL_Rect camera) const
 {
-  SDL_Color prev = w.getColor();
   int relativeX = frame.x-camera.x;
   int relativeY = frame.y-camera.y;
-  if(relativeX+frame.w <= 0 || relativeX >= camera.w)
+  if(frame.x+frame.w <= camera.x || frame.x >= camera.x+camera.w)
     return;
-  if(relativeY+frame.h <= 0 || relativeY >= camera.h)
+  if(frame.y+frame.h <= camera.y || frame.y >= camera.y+camera.h)
     return;
+  SDL_Color prev = w.getColor();
   SDL_Rect relativeFrame = {relativeX,relativeY,frame.w,frame.h};
   if(backgroundIsSet){
     w.setColor(activeBackground);
