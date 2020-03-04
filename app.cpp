@@ -12,6 +12,7 @@
 #include"collisionDetector.h"
 #include<vector>
 #include<map>
+#include<utility>
 #include<iostream>
 #include<functional>
 #include"listMenu.h"
@@ -88,7 +89,7 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
-void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::string> &names, WindowWrapper &w,
+void App::generateMenu(std::map<int,std::pair<Texture,std::string>> &textureNames, WindowWrapper &w,
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
                        std::function<void(const Button&)> rightCallback) const
 {
@@ -101,13 +102,13 @@ void App::generateMenu(std::map<int,Texture> &textures, std::map<int, std::strin
   int maxTextWidth;
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
   buttons.clear();
-  for(const auto &t : textures){
+  for(const auto &t : textureNames){
     buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
-    auto iconDimensions = current.setIcon(w,t.second,iconMaxSide,iconSep);
+    auto iconDimensions = current.setIcon(w,t.second.first,iconMaxSide,iconSep);
     maxTextWidth = buttonWidth-padding-padding-iconDimensions.first-iconSep;
     current.setTextAreaWidth(maxTextWidth);
-    current.setText(w,buttonFont,names[t.first]);
+    current.setText(w,buttonFont,t.second.second);
     currentY += current.getHeight() + TileMenuItemsMargin;
     current.setBackgroundColor({0x38,0x48,0x61});
     current.setHoverColor({0x4F,0x75,0x8A});
@@ -132,8 +133,7 @@ void App::run()
   SDL_Rect editorView;
   SDL_Rect tileMenu = {0,TileMenuOffset,mainWindow.getWidth()-TileMenuOffset,mainWindow.getHeight()-(TileMenuOffset+TileMenuOffset)};
   SDL_Rect tileMenuCamera = tileMenu;
-  std::map<int,Texture> idToTexture;
-  std::map<int,std::string> idToName;
+  std::map<int,std::pair<Texture,std::string>> idToTextureName;
   defineViews(mainWindow,menuView,editorView);
   ListMenu buttonList(5,5,3,5);
   std::vector<Button> menuButtons;
@@ -141,7 +141,7 @@ void App::run()
   bool regenerateMenu = false;
   int menuButtonsHeight = 0;
   generateButtons(buttonList,mainWindow,{
-    SpriteLoadCallback(idToTexture,idToName,mainWindow,regenerateMenu),
+    SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
     [&listOpen] ()->void {if(listOpen) 
                             listOpen = false;
                           else
@@ -162,9 +162,9 @@ void App::run()
                 listOpen = false;
               }
               if(regenerateMenu){
-                generateMenu(idToTexture,idToName,mainWindow,menuButtons,menuView,
+                generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
                   [&currentTile](const Button &b)->void{ currentTile = b.getId();},
-                  ChangeTileIdCallback(mainWindow,idToTexture,idToName)
+                  ChangeTileIdCallback(mainWindow,idToTextureName)
                 );
                 menuButtonsHeight = TileMenuOffset;
                 for(const auto &b : menuButtons)

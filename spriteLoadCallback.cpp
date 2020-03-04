@@ -18,8 +18,7 @@ void SpriteLoadCallback::operator()(const Button&)
     return;
   }
   int spriteCount = 0;
-  idToTexture.clear();
-  idToName.clear();
+  idToTextureName.clear();
   do {
     std::string fileName(data.cFileName);
     if(fileName == "." || fileName == ".." || fileName.length() <= formatLength)
@@ -30,8 +29,7 @@ void SpriteLoadCallback::operator()(const Button&)
       format = fileName.substr(formatIndex, formatLength);
     if(format == ".png" || format == ".jpg"){
       std::cout << "Loading " << path + fileName << std::endl;
-      idToTexture.emplace(std::make_pair(spriteCount,Texture(w,path + fileName)));
-      idToName.emplace(std::make_pair(spriteCount,fileName));
+      idToTextureName.emplace(std::make_pair(spriteCount,std::make_pair(Texture(w,path + fileName),fileName)));
       ++spriteCount;
     }
     else
