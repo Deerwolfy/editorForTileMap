@@ -12,7 +12,7 @@
 #include"collisionDetector.h"
 #include<vector>
 #include<map>
-#include<utility>
+#include"textureName.h"
 #include<iostream>
 #include<functional>
 #include"listMenu.h"
@@ -90,7 +90,7 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
-void App::generateMenu(std::map<int,std::pair<Texture,std::string>> &textureNames, WindowWrapper &w,
+void App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
                        std::function<void(const Button&)> rightCallback) const
 {
@@ -106,10 +106,10 @@ void App::generateMenu(std::map<int,std::pair<Texture,std::string>> &textureName
   for(const auto &t : textureNames){
     buttons.emplace_back(offsetX,currentY,padding,padding);
     Button &current = buttons.back();
-    auto iconDimensions = current.setIcon(w,t.second.first,iconMaxSide,iconSep);
+    auto iconDimensions = current.setIcon(w,t.second.texture,iconMaxSide,iconSep);
     maxTextWidth = buttonWidth-padding-padding-iconDimensions.first-iconSep;
     current.setTextAreaWidth(maxTextWidth);
-    current.setText(w,buttonFont,t.second.second);
+    current.setText(w,buttonFont,t.second.name);
     currentY += current.getHeight() + TileMenuItemsMargin;
     current.setBackgroundColor({0x38,0x48,0x61});
     current.setHoverColor({0x4F,0x75,0x8A});
@@ -135,7 +135,7 @@ void App::run()
   defineViews(mainWindow,menuView,editorView);
   SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
   SDL_Rect tileMenuCamera = {0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset};
-  std::map<int,std::pair<Texture,std::string>> idToTextureName;
+  std::map<int,TextureName> idToTextureName;
   ListMenu buttonList(5,5,3,5);
   std::vector<Button> menuButtons;
   bool listOpen = false;

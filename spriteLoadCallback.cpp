@@ -29,7 +29,7 @@ void SpriteLoadCallback::operator()(const Button&)
       format = fileName.substr(formatIndex, formatLength);
     if(format == ".png" || format == ".jpg"){
       std::cout << "Loading " << path + fileName << std::endl;
-      idToTextureName.emplace(std::make_pair(spriteCount,std::make_pair(Texture(w,path + fileName),fileName)));
+      idToTextureName.emplace(spriteCount,TextureName{Texture(w,path + fileName),fileName});
       ++spriteCount;
     }
     else

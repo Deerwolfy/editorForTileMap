@@ -4,17 +4,17 @@
 #include<map>
 #include"button.h"
 #include<string>
-#include<utility>
+#include"textureName.h"
 #include"windowWrapper.h"
 #include"texture.h"
 
 class SpriteLoadCallback {
 public:
-  SpriteLoadCallback(std::map<int,std::pair<Texture,std::string>> &idToTextureName, WindowWrapper &w, bool &reg):
+  SpriteLoadCallback(std::map<int,TextureName> &idToTextureName, WindowWrapper &w, bool &reg):
     idToTextureName(idToTextureName), w(w), regenerate(reg) { }
   void operator()(const Button&);
 private:
-  std::map<int,std::pair<Texture,std::string>> &idToTextureName;
+  std::map<int,TextureName> &idToTextureName;
   WindowWrapper &w;
   bool &regenerate;
 };

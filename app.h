@@ -10,6 +10,7 @@
 #include<string>
 #include<map>
 #include"listMenu.h"
+#include"textureName.h"
 
 struct Callbacks;
 
@@ -24,7 +25,7 @@ private:
   void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&) const;
   void generateButtons(ListMenu&,WindowWrapper&,Callbacks) const;
   void drawMenuBackground(const WindowWrapper&, const SDL_Rect&) const;
-  void generateMenu(std::map<int,std::pair<Texture,std::string>>&,WindowWrapper&,
+  void generateMenu(std::map<int,TextureName>&,WindowWrapper&,
                     std::vector<Button>&,const SDL_Rect&,std::function<void(const Button&)>,std::function<void(const Button&)>) const;
   void throwError(std::string,const char*) const;
 };

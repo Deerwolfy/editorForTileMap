@@ -5,16 +5,16 @@
 #include"button.h"
 #include"windowWrapper.h"
 #include"texture.h"
-#include<utility>
+#include"textureName.h"
 
 class ChangeTileIdCallback {
 public:
-  ChangeTileIdCallback(WindowWrapper &w,std::map<int,std::pair<Texture,std::string>> &idToTextureName):
+  ChangeTileIdCallback(WindowWrapper &w,std::map<int,TextureName> &idToTextureName):
     w(w), idToTextureName(idToTextureName) { }
   void operator()(const Button&);
 private:
   WindowWrapper &w;
-  std::map<int,std::pair<Texture,std::string>> &idToTextureName;
+  std::map<int,TextureName> &idToTextureName;
 };
 
 #endif
