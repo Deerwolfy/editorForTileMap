@@ -67,11 +67,11 @@ void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
 
 void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbacks) const
 {
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
   buttons.setTitle(w,buttonFont,"Editor");
   buttons.setListButtonClickCallback(callbacks.blockButtonsWhileListOpen);
-  buttons.setBackgroundColor({0x1D,0x24,0x30});
-  buttons.setHoverColor({0x4F,0x75,0x8A});
+  buttons.setBackgroundColor({0x1D,0x24,0x30,0xFF});
+  buttons.setHoverColor({0x4F,0x75,0x8A,0xFF});
   buttons.addEntry(w,buttonFont,"Sprite Folder",callbacks.spriteLoad);
   buttons.addEntry(w,buttonFont,"Save level",callbacks.spriteLoad);
   buttons.addEntry(w,buttonFont,"Load level",callbacks.spriteLoad);
@@ -101,7 +101,7 @@ void App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w
   int iconSep = 5;
   int buttonWidth = parent.w - offsetX - offsetX;
   int maxTextWidth;
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
   buttons.clear();
   for(const auto &t : textureNames){
     buttons.emplace_back(offsetX,currentY,padding,padding);
@@ -111,9 +111,9 @@ void App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w
     current.setTextAreaWidth(maxTextWidth);
     current.setText(w,buttonFont,t.second.name);
     currentY += current.getHeight() + TileMenuItemsMargin;
-    current.setBackgroundColor({0x38,0x48,0x61});
-    current.setHoverColor({0x4F,0x75,0x8A});
-    current.setBorderColor({0x00,0x00,0x00});
+    current.setBackgroundColor({0x38,0x48,0x61,0xFF});
+    current.setHoverColor({0x4F,0x75,0x8A,0xFF});
+    current.setBorderColor({0x00,0x00,0x00,0xFF});
     current.setButtonId(t.first);
   }
   for(auto &b : buttons)
