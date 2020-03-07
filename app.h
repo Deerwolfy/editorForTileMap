@@ -25,7 +25,7 @@ private:
   void defineViews(WindowWrapper&,SDL_Rect&, SDL_Rect&) const;
   void generateButtons(ListMenu&,WindowWrapper&,Callbacks) const;
   void drawMenuBackground(const WindowWrapper&, const SDL_Rect&) const;
-  void generateMenu(std::map<int,TextureName>&,WindowWrapper&,
+  int generateMenu(std::map<int,TextureName>&,WindowWrapper&,
                     std::vector<Button>&,const SDL_Rect&,std::function<void(const Button&)>,std::function<void(const Button&)>) const;
   void throwError(std::string,const char*) const;
 };

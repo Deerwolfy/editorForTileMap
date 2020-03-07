@@ -30,10 +30,8 @@ public:
   void render(WindowWrapper&,SDL_Rect) const;
   void mouseMove(const SDL_Event&);
   void mouseMove(const SDL_Event&, SDL_Rect);
-  int leftClick(const SDL_Event&) const;
-  int leftClick(const SDL_Event&, SDL_Rect) const;
-  int rightClick(const SDL_Event&) const;
-  int rightClick(const SDL_Event&, SDL_Rect) const;
+  int click(const SDL_Event&) const;
+  int click(const SDL_Event&, const SDL_Rect&) const;
   void setX(int x) { frame.x = x; }
   void setY(int y) { frame.y = y; }
   void setTopPadding(int);
@@ -50,6 +48,9 @@ public:
   int getHeight() const { return frame.h; }
   int getId() const { return buttonId; }
 private:
+  void updateHover(const SDL_Point&);
+  int leftClick(const SDL_Point&) const;
+  int rightClick(const SDL_Point&) const;
   bool hover = false;
   bool backgroundIsSet = false;
   bool borderIsSet = false;

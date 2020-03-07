@@ -19,6 +19,8 @@ public:
   void setListButtonClickCallback(std::function<void()>);
   void hide() { shown = false; }
   void show() { shown = true; }
+  void toggle();
+  bool isShown() const { return shown; }
   void render(WindowWrapper&) const;
   void mouseMove(const SDL_Event&);
   int leftClick(const SDL_Event&);

@@ -138,70 +138,69 @@ void Button::render(WindowWrapper &w, SDL_Rect camera) const
   w.setColor(prev);
 }
 
-int Button::leftClick(const SDL_Event &e) const
+int Button::click(const SDL_Event &e) const
 {
-  if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x,e.button.y},frame))
-    if(leftClickCallback){
-      leftClickCallback(*this);
-      return 1;
-    }
+  if(isCollide({e.button.x,e.button.y},frame)){
+    if(e.button.button == SDL_BUTTON_LEFT)
+      return leftClick({e.button.x,e.button.y});
+    else if(e.button.button == SDL_BUTTON_RIGHT)
+      return rightClick({e.button.x,e.button.y});
+  }
   return 0;
 }
 
-int Button::leftClick(const SDL_Event &e, SDL_Rect camera) const
+int Button::click(const SDL_Event &e, const SDL_Rect &camera) const
 {
-  if(e.button.button == SDL_BUTTON_LEFT && isCollide({e.button.x+camera.x,e.button.y+camera.y},frame))
-    if(leftClickCallback){
-      leftClickCallback(*this);
-      return 1;
-    }
+  SDL_Point mousePos{e.button.x+camera.x,e.button.y+camera.y};
+  if(isCollide(mousePos,frame)){
+    if(e.button.button == SDL_BUTTON_LEFT)
+      return leftClick(mousePos);
+    else if(e.button.button == SDL_BUTTON_RIGHT)
+      return rightClick(mousePos);
+  }
   return 0;
 }
 
-int Button::rightClick(const SDL_Event &e) const
+int Button::leftClick(const SDL_Point &mousePos) const
 {
-  if(e.button.button == SDL_BUTTON_RIGHT && isCollide({e.button.x,e.button.y},frame))
-    if(rightClickCallback){
-      rightClickCallback(*this);
-      return 1;
-    }
+  if(leftClickCallback){
+    leftClickCallback(*this);
+    return 1;
+  }
   return 0;
 }
 
-int Button::rightClick(const SDL_Event &e, SDL_Rect camera) const
+int Button::rightClick(const SDL_Point &mousePos) const
 {
-  if(e.button.button == SDL_BUTTON_RIGHT && isCollide({e.button.x+camera.x,e.button.y+camera.y},frame))
-    if(rightClickCallback){
-      rightClickCallback(*this);
-      return 1;
-    }
+  if(rightClickCallback){
+    rightClickCallback(*this);
+    return 1;
+  }
   return 0;
 }
 
 void Button::mouseMove(const SDL_Event &e)
 {
-  if(backgroundIsSet && hoverIsSet){
-    int x,y;
-    SDL_GetMouseState(&x,&y);
-    if(isCollide({x,y},frame)){
-      activeBackground = hoverColor;
-      hover = true;
-    }
-    else if(hover)
-      activeBackground = backgroundColor;
-  }
+  if(backgroundIsSet && hoverIsSet)
+    updateHover({e.motion.x,e.motion.y});
 }
 
 void Button::mouseMove(const SDL_Event &e, SDL_Rect camera)
 {
   if(backgroundIsSet && hoverIsSet){
-    int x,y;
-    SDL_GetMouseState(&x,&y);
-    if(isCollide({x+camera.x,y+camera.y},frame)){
+    SDL_Point mousePos;
+    mousePos.x = e.motion.x + camera.x;
+    mousePos.y = e.motion.y + camera.y;
+    updateHover(mousePos);
+  }
+}
+
+void Button::updateHover(const SDL_Point &mousePos)
+{
+  if(isCollide(mousePos,frame)){
       activeBackground = hoverColor;
       hover = true;
     }
     else if(hover)
       activeBackground = backgroundColor;
-  }
 }

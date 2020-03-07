@@ -3,15 +3,28 @@
 #include"collisionDetector.h"
 
 ListMenu::ListMenu(int x, int y, int tbPadding, int rlPadding):
-    mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), frame({x,currentY,0,0}) { }
+    mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), frame({x,currentY,0,0})
+{
+  mainButton.setLeftClickCallback([this](const Button&)->void {
+    toggle();
+  });
+}
 
 void ListMenu::setListButtonClickCallback(std::function<void()> callback)
 {
   mainButton.setLeftClickCallback([callback,this] (const Button&)->void {
-      if(shown) shown = false;
-      else shown = true;
+      toggle();
       callback();
     });
+}
+
+void ListMenu::toggle()
+{
+  if(shown)
+    shown = false;
+  else
+    shown = true;
+  
 }
 
 void ListMenu::setTitle(WindowWrapper &w, const Font &font, const std::string &title)
@@ -91,11 +104,11 @@ void ListMenu::mouseMove(const SDL_Event &e)
 
 int ListMenu::leftClick(const SDL_Event &e)
 {
-  if(mainButton.leftClick(e))
+  if(mainButton.click(e))
     return 1;
   if(shown && isCollide({e.button.x,e.button.y},frame)){
       for(auto &b : menuButtons)
-        if(b.leftClick(e)) return 1;
+        if(b.click(e)) return 1;
   }
   return 0;
 }

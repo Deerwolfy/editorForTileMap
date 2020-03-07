@@ -24,7 +24,6 @@ constexpr int TilemenuXOffset = 20;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
-  std::function<void()> blockButtonsWhileListOpen;
 };
 
 void App::init() const
@@ -69,7 +68,6 @@ void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbac
 {
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
   buttons.setTitle(w,buttonFont,"Editor");
-  buttons.setListButtonClickCallback(callbacks.blockButtonsWhileListOpen);
   buttons.setBackgroundColor({0x1D,0x24,0x30,0xFF});
   buttons.setHoverColor({0x4F,0x75,0x8A,0xFF});
   buttons.addEntry(w,buttonFont,"Sprite Folder",callbacks.spriteLoad);
@@ -90,7 +88,7 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
   w.setColor(prev);
 }
 
-void App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
+int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
                        std::function<void(const Button&)> rightCallback) const
 {
@@ -115,9 +113,9 @@ void App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w
     current.setHoverColor({0x4F,0x75,0x8A,0xFF});
     current.setBorderColor({0x00,0x00,0x00,0xFF});
     current.setButtonId(t.first);
+    current.setRightPadding(buttonWidth - current.getWidth());
   }
-  for(auto &b : buttons)
-    b.setRightPadding(buttonWidth - b.getWidth());
+  return currentY;
 }
 
 void App::run()
@@ -138,70 +136,59 @@ void App::run()
   std::map<int,TextureName> idToTextureName;
   ListMenu buttonList(5,5,3,5);
   std::vector<Button> menuButtons;
-  bool listOpen = false;
   bool regenerateMenu = false;
   int menuButtonsHeight = 0;
   generateButtons(buttonList,mainWindow,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
-    [&listOpen] ()->void {if(listOpen) 
-                            listOpen = false;
-                          else
-                            listOpen = true; }
   });
   bool quit = false;
   while(!quit){
     capTimer.start();
     while(SDL_PollEvent(&e) != 0){
-      if(e.type == SDL_QUIT){
-        quit = true;
-      }
-      else {
-        switch(e.type){
-          case SDL_MOUSEBUTTONDOWN:
-              if(!buttonList.leftClick(e)){
-                buttonList.hide();
-                listOpen = false;
-              }
-              if(regenerateMenu){
-                generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
-                  [&currentTile](const Button &b)->void{ currentTile = b.getId();},
-                  ChangeTileIdCallback(mainWindow,idToTextureName)
-                );
-                menuButtonsHeight = TileMenuYOffset;
-                for(const auto &b : menuButtons)
-                  menuButtonsHeight += b.getHeight() + TileMenuItemsMargin;
-                regenerateMenu = false;
-              }
-              if(!listOpen){
+      switch(e.type){
+        case SDL_QUIT:
+          quit = true;
+        break;
+        case SDL_MOUSEBUTTONDOWN:
+            if(!buttonList.leftClick(e)){
+              buttonList.hide();
+            }
+            if(regenerateMenu){
+              menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
+                [&currentTile](const Button &b)->void{ currentTile = b.getId();},
+                ChangeTileIdCallback(mainWindow,idToTextureName)
+              );
+              regenerateMenu = false;
+            }
+            if(!buttonList.isShown()){
 
-              }
-          break;
-          case SDL_MOUSEMOTION:
-            SDL_GetMouseState(&mouseX,&mouseY);
+            }
+        break;
+        case SDL_MOUSEMOTION:
+          SDL_GetMouseState(&mouseX,&mouseY);
+          if(isCollide({mouseX, mouseY}, menuView)){
+            buttonList.mouseMove(e);
+            if(!buttonList.isShown()){
+              for(auto &b : menuButtons)
+                b.mouseMove(e,tileMenuCamera);
+            }
+          }
+        break;
+        case SDL_MOUSEWHEEL:
+          SDL_GetMouseState(&mouseX,&mouseY);
+          if(e.wheel.y > 0){
             if(isCollide({mouseX, mouseY}, menuView)){
-              buttonList.mouseMove(e);
-              if(!listOpen){
-                for(auto &b : menuButtons)
-                  b.mouseMove(e,tileMenuCamera);
-              }
+              if(tileMenuCamera.y >= tileMenuScrollSpeed)
+                tileMenuCamera.y -= tileMenuScrollSpeed;
             }
-          break;
-          case SDL_MOUSEWHEEL:
-            SDL_GetMouseState(&mouseX,&mouseY);
-            if(e.wheel.y > 0){
-              if(isCollide({mouseX, mouseY}, menuView)){
-                if(tileMenuCamera.y >= tileMenuScrollSpeed)
-                  tileMenuCamera.y -= tileMenuScrollSpeed;
-              }
+          }
+          else if(e.wheel.y < 0){
+            if(isCollide({mouseX, mouseY}, menuView)){
+              if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
+                tileMenuCamera.y += tileMenuScrollSpeed;
             }
-            else if(e.wheel.y < 0){
-              if(isCollide({mouseX, mouseY}, menuView)){
-                if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
-                  tileMenuCamera.y += tileMenuScrollSpeed;
-              }
-            }
-          break;
-        }
+          }
+        break;
       }
     }
     mainWindow.clear();
