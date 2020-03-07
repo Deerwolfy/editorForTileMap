@@ -150,8 +150,9 @@ void App::run()
           quit = true;
         break;
         case SDL_MOUSEBUTTONDOWN:
-            if(!buttonList.leftClick(e)){
-              buttonList.hide();
+            buttonList.click(e);
+            if(!buttonList.isShown()){
+
             }
             if(regenerateMenu){
               menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
@@ -160,18 +161,12 @@ void App::run()
               );
               regenerateMenu = false;
             }
-            if(!buttonList.isShown()){
-
-            }
         break;
         case SDL_MOUSEMOTION:
-          SDL_GetMouseState(&mouseX,&mouseY);
-          if(isCollide({mouseX, mouseY}, menuView)){
-            buttonList.mouseMove(e);
-            if(!buttonList.isShown()){
-              for(auto &b : menuButtons)
-                b.mouseMove(e,tileMenuCamera);
-            }
+          buttonList.mouseMove(e);
+          if(!buttonList.isShown()){
+            for(auto &b : menuButtons)
+              b.mouseMove(e,tileMenuCamera);
           }
         break;
         case SDL_MOUSEWHEEL:

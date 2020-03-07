@@ -102,13 +102,19 @@ void ListMenu::mouseMove(const SDL_Event &e)
       b.mouseMove(e);
 }
 
-int ListMenu::leftClick(const SDL_Event &e)
+void ListMenu::click(const SDL_Event &e)
 {
   if(mainButton.click(e))
-    return 1;
-  if(shown && isCollide({e.button.x,e.button.y},frame)){
-      for(auto &b : menuButtons)
-        if(b.click(e)) return 1;
+    return;
+  if(shown){
+    if(isCollide({e.button.x,e.button.y},frame)){
+        for(auto &b : menuButtons)
+          if(b.click(e)){
+            shown = false;
+            return;
+          }
+    } else {
+      shown = false;
+    }
   }
-  return 0;
 }

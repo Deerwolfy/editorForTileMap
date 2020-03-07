@@ -23,7 +23,7 @@ public:
   bool isShown() const { return shown; }
   void render(WindowWrapper&) const;
   void mouseMove(const SDL_Event&);
-  int leftClick(const SDL_Event&);
+  void click(const SDL_Event&);
 private:
   Button mainButton;
   std::vector<Button> menuButtons;
