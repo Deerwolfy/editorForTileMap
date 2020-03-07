@@ -18,6 +18,7 @@
 #include"listMenu.h"
 
 constexpr double TicksPerFrame = 1000.0/60.0;
+constexpr int TileMenuScrollSpeed = 20;
 constexpr int TileMenuItemsMargin = 5;
 constexpr int TileMenuYOffset = 40;
 constexpr int TilemenuXOffset = 20;
@@ -125,7 +126,6 @@ void App::run()
   SDL_Event e;
   int mouseX;
   int mouseY;
-  const int tileMenuScrollSpeed = 20;
   int currentTile = 0;
   Timer capTimer;
   SDL_Rect menuView;
@@ -178,14 +178,14 @@ void App::run()
           SDL_GetMouseState(&mouseX,&mouseY);
           if(e.wheel.y > 0){
             if(isCollide({mouseX, mouseY}, menuView)){
-              if(tileMenuCamera.y >= tileMenuScrollSpeed)
-                tileMenuCamera.y -= tileMenuScrollSpeed;
+              if(tileMenuCamera.y >= TileMenuScrollSpeed)
+                tileMenuCamera.y -= TileMenuScrollSpeed;
             }
           }
           else if(e.wheel.y < 0){
             if(isCollide({mouseX, mouseY}, menuView)){
               if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
-                tileMenuCamera.y += tileMenuScrollSpeed;
+                tileMenuCamera.y += TileMenuScrollSpeed;
             }
           }
         break;
