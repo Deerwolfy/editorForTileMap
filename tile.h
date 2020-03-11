@@ -16,6 +16,7 @@ public:
   void setY(int y) { this->y = y; }
   int getWidth() const { return texture.getWidth(); }
   int getHeight() const { return texture.getHeight(); }
+  SDL_Rect getBoundBox() const { return {x,y,texture.getWidth(), texture.getHeight()}; }
 private:
   Texture texture;
   int x;

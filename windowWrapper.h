@@ -18,6 +18,10 @@ public:
   SDL_Window *getWindow() const { return window; }
   void clear() const;
   void redraw() const { SDL_RenderPresent(renderer); }
+  void drawRect(const SDL_Rect &r) const { SDL_RenderDrawRect(renderer,&r); }
+  void fillRect(const SDL_Rect &r) const { SDL_RenderFillRect(renderer,&r); }
+  void drawPoint(const SDL_Point &p) const { SDL_RenderDrawPoint(renderer,p.x,p.y); }
+  void drawPoint(int x, int y) const { SDL_RenderDrawPoint(renderer,x,y); }
   void setColor(Uint8 r, Uint8 g, Uint8 b, Uint8 a = 0xFF) const { SDL_SetRenderDrawColor(renderer,r,g,b,a); }
   void setColor(const SDL_Color &color) const { SDL_SetRenderDrawColor(renderer,color.r,color.g,color.b,color.a); }
   void setViewport(SDL_Rect *viewport = nullptr) const { SDL_RenderSetViewport(renderer,viewport); }

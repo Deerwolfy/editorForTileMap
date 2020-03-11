@@ -11,6 +11,7 @@
 #include<map>
 #include"listMenu.h"
 #include"textureName.h"
+#include"selectionBox.h"
 
 struct Callbacks;
 
