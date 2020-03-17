@@ -9,6 +9,11 @@
 class GuiElement {
 public:
   GuiElement(int x, int y, int width, int height): frame({x,y,width,height}) { }
+  GuiElement(const GuiElement&) = default;
+  GuiElement(GuiElement&&) = default;
+  GuiElement& operator=(const GuiElement&) = default;
+  GuiElement& operator=(GuiElement&&) = default;
+  virtual ~GuiElement() = default;
   void setX(int x) { frame.x = x; }
   void setY(int y) { frame.y = y; }
   int getX() const { return frame.x; }
