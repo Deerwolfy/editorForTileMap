@@ -3,16 +3,16 @@
 #include"collisionDetector.h"
 
 ListMenu::ListMenu(int x, int y, int tbPadding, int rlPadding):
-    mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), frame({x,currentY,0,0})
+    mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), GuiElement(x,currentY,0,0)
 {
-  mainButton.setLeftClickCallback([this](const Button&)->void {
+  mainButton.setLeftClickCallback([this](const GuiElement&)->void {
     toggle();
   });
 }
 
 void ListMenu::setListButtonClickCallback(std::function<void()> callback)
 {
-  mainButton.setLeftClickCallback([callback,this] (const Button&)->void {
+  mainButton.setLeftClickCallback([callback,this] (const GuiElement&)->void {
       toggle();
       callback();
     });
@@ -35,7 +35,7 @@ void ListMenu::setTitle(WindowWrapper &w, const Font &font, const std::string &t
 }
 
 void ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::string &text,
-                            std::function<void(const Button&)> callback)
+                            std::function<void(const GuiElement&)> callback)
 {
   menuButtons.emplace_back(frame.x,currentY,mainButton.getTopPadding(),mainButton.getLeftPadding());
   Button &current = menuButtons.back();
@@ -51,30 +51,30 @@ void ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::string &t
     current.setRightPadding(frame.w - current.getWidth());
   currentY += current.getHeight();
   frame.h += current.getHeight();
-  if(backgroundIsSet)
-    current.setBackgroundColor(background);
+  if(backgroundColorIsSet)
+    current.setBackgroundColor(backgroundColor);
   if(hoverIsSet)
     current.setHoverColor(hover);
-  if(borderIsSet)
-    current.setBorderColor(border);
+  if(borderColorIsSet)
+    current.setBorderColor(borderColor);
 }
 
-void ListMenu::setBackgroundColor(SDL_Color color)
+void ListMenu::setBackgroundColor(const SDL_Color &color)
 {
   mainButton.setBackgroundColor(color);
   for(auto &b : menuButtons)
     b.setBackgroundColor(color);
-  background = color;
-  backgroundIsSet = true;
+  backgroundColor = color;
+  backgroundColorIsSet = true;
 }
 
-void ListMenu::setBorderColor(SDL_Color color)
+void ListMenu::setBorderColor(const SDL_Color &color)
 {
   mainButton.setBorderColor(color);
   for(auto &b : menuButtons)
     b.setBorderColor(color);
-  border = color;
-  borderIsSet = true;
+  borderColor = color;
+  borderColorIsSet = true;
 }
 
 void ListMenu::setHoverColor(SDL_Color color)

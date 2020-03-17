@@ -1,6 +1,6 @@
 #include"changeTileIdCallback.h"
 
-void ChangeTileIdCallback::operator()(const Button &b)
+void ChangeTileIdCallback::operator()(const GuiElement &b)
 {
     
 }

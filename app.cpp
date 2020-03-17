@@ -116,7 +116,7 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
     current.setBackgroundColor({0x38,0x48,0x61,0xFF});
     current.setHoverColor({0x4F,0x75,0x8A,0xFF});
     current.setBorderColor({0x00,0x00,0x00,0xFF});
-    current.setButtonId(t.first);
+    current.setElementId(t.first);
     current.setRightPadding(buttonWidth - current.getWidth());
   }
   return currentY;
@@ -172,7 +172,7 @@ void App::run()
             }
             if(regenerateMenu){
               menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
-                [&currentTile](const Button &b)->void{ currentTile = b.getId();},
+                [&currentTile](const Button &b)->void{ currentTile = b.getElementId();},
                 ChangeTileIdCallback(mainWindow,idToTextureName)
               );
               regenerateMenu = false;

@@ -2,7 +2,7 @@
 #define CHANGETILEIDCALLBACK_H
 
 #include<map>
-#include"button.h"
+#include"guiElement.h"
 #include"windowWrapper.h"
 #include"texture.h"
 #include"textureName.h"
@@ -11,7 +11,7 @@ class ChangeTileIdCallback {
 public:
   ChangeTileIdCallback(WindowWrapper &w,std::map<int,TextureName> &idToTextureName):
     w(w), idToTextureName(idToTextureName) { }
-  void operator()(const Button&);
+  void operator()(const GuiElement&);
 private:
   WindowWrapper &w;
   std::map<int,TextureName> &idToTextureName;

@@ -6,7 +6,7 @@
 #include<string>
 #include<vector>
 
-void SpriteLoadCallback::operator()(const Button&)
+void SpriteLoadCallback::operator()(const GuiElement&)
 {
   std::string path = "sprites/";
   std::string filePath = path + "*";

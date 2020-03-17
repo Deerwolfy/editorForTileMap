@@ -9,31 +9,24 @@
 #include<string>
 #include<memory>
 #include<utility>
+#include"guiElement.h"
 
-class Button {
+class Button : public GuiElement {
 public:
   Button(int x, int y, int tbPadding, int rlPadding):
     topPadding(tbPadding), bottomPadding(tbPadding), rightPadding(rlPadding), leftPadding(rlPadding), 
-    frame({x,y,rlPadding+rlPadding,tbPadding+tbPadding}) { }
+    GuiElement(x,y,rlPadding+rlPadding,tbPadding+tbPadding) { }
   void setText(WindowWrapper&, const Font&, const std::string&);
-  void setButtonId(int id) { buttonId = id; }
-  void setBorderColor(SDL_Color);
-  void setBackgroundColor(SDL_Color);
-  void setHoverColor(SDL_Color);
-  void setLeftClickCallback(std::function<void(const Button&)> callback)
-    { leftClickCallback = callback; }
-  void setRightClickCallback(std::function<void(const Button&)> callback)
-    { rightClickCallback = callback; }
+  void setHoverColor(const SDL_Color&);
+  void setBackgroundColor(const SDL_Color&) override;
   std::pair<int,int> setIcon(WindowWrapper&, Texture, int maxDimension = 32, int iconRightPadding = 0);
   void setTextAreaWidth(int width) { textAreaWidth = width; };
-  void render(WindowWrapper&) const;
+  void render(WindowWrapper&) const override;
   void render(WindowWrapper&,SDL_Rect) const;
   void mouseMove(const SDL_Event&);
   void mouseMove(const SDL_Event&, SDL_Rect);
   int click(const SDL_Event&) const;
   int click(const SDL_Event&, const SDL_Rect&) const;
-  void setX(int x) { frame.x = x; }
-  void setY(int y) { frame.y = y; }
   void setTopPadding(int);
   void setBottomPadding(int);
   void setRightPadding(int);
@@ -42,22 +35,12 @@ public:
   int getLeftPadding() const { return leftPadding; }
   int getTopPadding() const { return topPadding; }
   int getBottomPadding() const { return bottomPadding; }
-  int getX() const { return frame.x; }
-  int getY() const { return frame.y; }
-  int getWidth() const { return frame.w; }
-  int getHeight() const { return frame.h; }
-  int getId() const { return buttonId; }
 private:
   void updateHover(const SDL_Point&);
-  int leftClick(const SDL_Point&) const;
-  int rightClick(const SDL_Point&) const;
   bool hover = false;
-  bool backgroundIsSet = false;
-  bool borderIsSet = false;
   bool iconIsSet = false;
   bool textIsSet = false;
   bool hoverIsSet = false;
-  int buttonId = 0;
   int textOffsetY = 0;
   int textOffsetX = 0;
   int topPadding;
@@ -65,15 +48,10 @@ private:
   int rightPadding;
   int leftPadding;
   int textAreaWidth = -1;
-  std::function<void(const Button&)> leftClickCallback;
-  std::function<void(const Button&)> rightClickCallback;
   Texture text;
   Texture icon;
-  SDL_Color borderColor;
-  SDL_Color backgroundColor;
   SDL_Color hoverColor;
   SDL_Color activeBackground;
-  SDL_Rect frame;
 };
 
 #endif
