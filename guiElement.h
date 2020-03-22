@@ -18,6 +18,8 @@ public:
   void setY(int y) { frame.y = y; }
   int getX() const { return frame.x; }
   int getY() const { return frame.y; }
+  void show() { shown = true; }
+  void hide() { shown = false; }
   int getElementId() const { return elementId; }
   void setElementId(int id) { elementId = id; }
   int getWidth() const { return frame.w; }
@@ -33,6 +35,7 @@ protected:
   void rightClick() const;
   void leftClick() const;
   SDL_Rect frame;
+  bool shown = true;
   bool borderColorIsSet = false;
   bool backgroundColorIsSet = false;
   int elementId;

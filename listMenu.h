@@ -18,10 +18,8 @@ public:
   void setBackgroundColor(const SDL_Color &color) override;
   void setBorderColor(const SDL_Color &color) override;
   void setListButtonClickCallback(std::function<void()>);
-  void hide() { shown = false; }
-  void show() { shown = true; }
   void toggle();
-  bool isShown() const { return shown; }
+  bool isOpen() const { return open; }
   void render(WindowWrapper&) const override;
   void mouseMove(const SDL_Event&);
   void click(const SDL_Event&);
@@ -29,8 +27,8 @@ private:
   Button mainButton;
   std::vector<Button> menuButtons;
   int currentY;
-  bool shown = false;
   bool hoverIsSet = false;
+  bool open = false;
   SDL_Color hover;
 };
 

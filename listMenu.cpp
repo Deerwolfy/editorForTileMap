@@ -20,10 +20,10 @@ void ListMenu::setListButtonClickCallback(std::function<void()> callback)
 
 void ListMenu::toggle()
 {
-  if(shown)
-    shown = false;
+  if(open)
+    open = false;
   else
-    shown = true;
+    open = true;
   
 }
 
@@ -89,7 +89,7 @@ void ListMenu::setHoverColor(SDL_Color color)
 void ListMenu::render(WindowWrapper &w) const
 {
   mainButton.render(w);
-  if(shown){
+  if(open){
     for(const auto &b : menuButtons)
       b.render(w);
   }
@@ -106,15 +106,15 @@ void ListMenu::click(const SDL_Event &e)
 {
   if(mainButton.click(e))
     return;
-  if(shown){
+  if(open){
     if(isCollide({e.button.x,e.button.y},frame)){
         for(auto &b : menuButtons)
           if(b.click(e)){
-            shown = false;
+            open = false;
             return;
           }
     } else {
-      shown = false;
+      open = false;
     }
   }
 }

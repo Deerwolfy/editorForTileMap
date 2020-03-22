@@ -20,13 +20,14 @@
 #include"selectionBox.h"
 
 constexpr double TicksPerFrame = 1000.0/60.0;
-constexpr int TileMenuScrollSpeed = 20;
+constexpr int TileMenuScrollSpeed = 30;
 constexpr int TileMenuItemsMargin = 5;
 constexpr int TileMenuYOffset = 40;
 constexpr int TilemenuXOffset = 20;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
+  std::function<void(const GuiElement&)> quitCallback;
 };
 
 void App::init() const
@@ -80,6 +81,7 @@ void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbac
   buttons.addEntry(w,buttonFont,"Save settings",callbacks.spriteLoad);
   buttons.addEntry(w,buttonFont,"Load Settings",callbacks.spriteLoad);
   buttons.addEntry(w,buttonFont,"View log",callbacks.spriteLoad);
+  buttons.addEntry(w,buttonFont,"Quit",callbacks.quitCallback);
 }
 
 void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
@@ -93,8 +95,8 @@ void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
 }
 
 int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
-                       std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const Button&)> leftCallback,
-                       std::function<void(const Button&)> rightCallback) const
+                       std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const GuiElement&)> leftCallback,
+                       std::function<void(const GuiElement&)> rightCallback) const
 {
   int offsetX = TilemenuXOffset;
   int currentY = TileMenuYOffset;
@@ -117,6 +119,8 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
     current.setHoverColor({0x4F,0x75,0x8A,0xFF});
     current.setBorderColor({0x00,0x00,0x00,0xFF});
     current.setElementId(t.first);
+    current.setLeftClickCallback(leftCallback);
+    current.setRightClickCallback(rightCallback);
     current.setRightPadding(buttonWidth - current.getWidth());
   }
   return currentY;
@@ -128,7 +132,6 @@ void App::run()
   int tileSize = 32;
   mainWindow.show();
   SDL_Event e;
-  
   int currentTile = 1;
   Timer capTimer;
   SDL_Rect menuView;
@@ -145,10 +148,11 @@ void App::run()
   bool regenerateMenu = false;
   bool tilesLoad = false;
   int menuButtonsHeight = 0;
+  bool quit = false;
   generateButtons(buttonList,mainWindow,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
+    [&quit](const GuiElement&){ quit = true; }
   });
-  bool quit = false;
   while(!quit){
     capTimer.start();
     while(SDL_PollEvent(&e) != 0){
@@ -158,7 +162,9 @@ void App::run()
         break;
         case SDL_MOUSEBUTTONDOWN:
             buttonList.click(e);
-            if(!buttonList.isShown()){
+            if(!buttonList.isOpen()){
+              for(auto &b : menuButtons)
+                b.click(e,tileMenuCamera);
               if(e.button.button == SDL_BUTTON_LEFT){
                 if(isCollide({e.button.x,e.button.y},editorView)){
                   leftMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
@@ -172,7 +178,7 @@ void App::run()
             }
             if(regenerateMenu){
               menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
-                [&currentTile](const Button &b)->void{ currentTile = b.getElementId();},
+                [&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId();},
                 ChangeTileIdCallback(mainWindow,idToTextureName)
               );
               regenerateMenu = false;
@@ -180,7 +186,7 @@ void App::run()
             }
         break;
         case SDL_MOUSEBUTTONUP:
-          if(!buttonList.isShown()){
+          if(!buttonList.isOpen()){
               if(e.button.button == SDL_BUTTON_LEFT){
                 if(isCollide({e.button.x,e.button.y},editorView) && tilesLoad){
                   SDL_Point origin = leftMouseBox.getOrigin();
@@ -232,7 +238,7 @@ void App::run()
         break;
         case SDL_MOUSEMOTION:
           buttonList.mouseMove(e);
-          if(!buttonList.isShown()){
+          if(!buttonList.isOpen()){
             for(auto &b : menuButtons)
               b.mouseMove(e,tileMenuCamera);
             if(leftMouseBox.isHold()){
