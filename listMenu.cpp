@@ -88,6 +88,8 @@ void ListMenu::setHoverColor(SDL_Color color)
 
 void ListMenu::render(WindowWrapper &w) const
 {
+  if(!shown)
+    return;
   mainButton.render(w);
   if(open){
     for(const auto &b : menuButtons)
@@ -104,6 +106,8 @@ void ListMenu::mouseMove(const SDL_Event &e)
 
 void ListMenu::click(const SDL_Event &e)
 {
+  if(!shown)
+    return;
   if(mainButton.click(e))
     return;
   if(open){

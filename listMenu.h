@@ -18,6 +18,8 @@ public:
   void setBackgroundColor(const SDL_Color &color) override;
   void setBorderColor(const SDL_Color &color) override;
   void setListButtonClickCallback(std::function<void()>);
+  void doOpen() { open = true; }
+  void doClose() { open = false; }
   void toggle();
   bool isOpen() const { return open; }
   void render(WindowWrapper&) const override;

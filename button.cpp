@@ -91,6 +91,8 @@ void Button::setLeftPadding(int padding)
 
 void Button::render(WindowWrapper &w) const
 {
+  if(!shown)
+    return;
   SDL_Color prev = w.getColor();
   if(backgroundColorIsSet){
     w.setColor(activeBackground);
@@ -109,6 +111,8 @@ void Button::render(WindowWrapper &w) const
 
 void Button::render(WindowWrapper &w, SDL_Rect camera) const
 {
+  if(!shown)
+    return;
   int relativeX = frame.x-camera.x;
   int relativeY = frame.y-camera.y;
   if(frame.x+frame.w <= camera.x || frame.x >= camera.x+camera.w)
@@ -134,7 +138,7 @@ void Button::render(WindowWrapper &w, SDL_Rect camera) const
 
 int Button::click(const SDL_Event &e) const
 {
-  if(isCollide({e.button.x,e.button.y},frame)){
+  if(isCollide({e.button.x,e.button.y},frame) && shown){
     if(e.button.button == SDL_BUTTON_LEFT)
       leftClick();
     else if(e.button.button == SDL_BUTTON_RIGHT)
@@ -147,7 +151,7 @@ int Button::click(const SDL_Event &e) const
 int Button::click(const SDL_Event &e, const SDL_Rect &camera) const
 {
   SDL_Point mousePos{e.button.x+camera.x,e.button.y+camera.y};
-  if(isCollide(mousePos,frame)){
+  if(isCollide(mousePos,frame) && shown){
     if(e.button.button == SDL_BUTTON_LEFT)
       leftClick();
     else if(e.button.button == SDL_BUTTON_RIGHT)
