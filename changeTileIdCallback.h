@@ -9,11 +9,11 @@
 
 class ChangeTileIdCallback {
 public:
-  ChangeTileIdCallback(WindowWrapper &w,std::map<int,TextureName> &idToTextureName):
-    w(w), idToTextureName(idToTextureName) { }
+  ChangeTileIdCallback(std::shared_ptr<WindowWrapper> window,std::map<int,TextureName> &idToTextureName):
+    window(window), idToTextureName(idToTextureName) { }
   void operator()(const GuiElement&);
 private:
-  WindowWrapper &w;
+  std::shared_ptr<WindowWrapper> window;
   std::map<int,TextureName> &idToTextureName;
 };
 

@@ -2,25 +2,21 @@
 #define SELECTIONBOX_H
 
 #include<SDL.h>
+#include"guiElement.h"
 #include"windowWrapper.h"
 
-class SelectionBox {
+class SelectionBox : public GuiElement{
 public:
-  SelectionBox(const SDL_Color &background, const SDL_Color &border): selection({0,0,0,0}),
-    backgroundColor(background), borderColor(border) { }
+  SelectionBox(std::shared_ptr<WindowWrapper> window, const SDL_Color &background, const SDL_Color &border):
+  GuiElement(window,0,0,0,0) { setBorderColor(border); setBackgroundColor(background); }
   void setStart(int x, int y);
   void setEnd(int x, int y);
-  SDL_Point getOrigin() const { return {selection.x,selection.y}; }
-  int getWidth() const { return selection.w; }
-  int getHeight() const { return selection.h; }
+  SDL_Point getOrigin() const { return {frame.x,frame.y}; }
   void unhold() { hold = false; }
   bool isHold() { return hold; }
-  void render(WindowWrapper&) const;
+  void render() const override;
 private:
   SDL_Point startPoint;
-  SDL_Rect selection;
-  SDL_Color backgroundColor;
-  SDL_Color borderColor;
   bool hold = false;
 };
 

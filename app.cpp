@@ -1,29 +1,4 @@
 #include"app.h"
-#include<SDL.h>
-#include<SDL_image.h>
-#include<SDL_ttf.h>
-#include<stdexcept>
-#include"windowWrapper.h"
-#include"timer.h"
-#include"button.h"
-#include"font.h"
-#include"spriteLoadCallback.h"
-#include"changeTileIdCallback.h"
-#include"collisionDetector.h"
-#include<vector>
-#include<map>
-#include"textureName.h"
-#include<iostream>
-#include<functional>
-#include"listMenu.h"
-#include"tile.h"
-#include"selectionBox.h"
-
-constexpr double TicksPerFrame = 1000.0/60.0;
-constexpr int TileMenuScrollSpeed = 30;
-constexpr int TileMenuItemsMargin = 5;
-constexpr int TileMenuYOffset = 40;
-constexpr int TilemenuXOffset = 20;
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -56,45 +31,45 @@ void App::throwError(std::string msg, const char *sdlMsg) const
   throw std::runtime_error(msg.append(sdlMsg)); 
 }
 
-void App::defineViews(WindowWrapper &w, SDL_Rect &menu, SDL_Rect &editor) const
+void App::defineViews(std::shared_ptr<WindowWrapper> w, SDL_Rect &menu, SDL_Rect &editor) const
 {
   menu.x = 0;
   menu.y = 0;
-  menu.w = w.getWidth()*0.27;
-  menu.h = w.getHeight();
+  menu.w = w->getWidth()*0.27;
+  menu.h = w->getHeight();
   editor.x = menu.w;
   editor.y = 0;
-  editor.w = w.getWidth()-menu.w;
-  editor.h = w.getHeight();
+  editor.w = w->getWidth()-menu.w;
+  editor.h = w->getHeight();
 }
 
-void App::generateButtons(ListMenu &buttons, WindowWrapper &w, Callbacks callbacks) const
+void App::generateButtons(ListMenu &buttons, Callbacks callbacks) const
 {
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
-  buttons.setTitle(w,buttonFont,"Editor");
+  buttons.setTitle(buttonFont,"Editor");
   buttons.setBackgroundColor({0x1D,0x24,0x30,0xFF});
   buttons.setHoverColor({0x4F,0x75,0x8A,0xFF});
-  buttons.addEntry(w,buttonFont,"Sprite Folder",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Save level",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Load level",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Editor background",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Save settings",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Load Settings",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"View log",callbacks.spriteLoad);
-  buttons.addEntry(w,buttonFont,"Quit",callbacks.quitCallback);
+  buttons.addEntry(buttonFont,"Sprite Folder",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Save level",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Load level",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Editor background",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Save settings",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Load Settings",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"View log",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Quit",callbacks.quitCallback);
 }
 
-void App::drawMenuBackground(const WindowWrapper &w, const SDL_Rect &menu) const
+void App::drawMenuBackground(std::shared_ptr<WindowWrapper> w, const SDL_Rect &menu) const
 {
-  SDL_Color prev = w.getColor();
-  w.setColor(0x2B,0x37,0x4A);
-  SDL_RenderFillRect(w.getRenderer(),&menu);
-  w.setColor(0x00,0x00,0x00);
-  SDL_RenderDrawRect(w.getRenderer(),&menu);
-  w.setColor(prev);
+  SDL_Color prev = w->getColor();
+  w->setColor(0x2B,0x37,0x4A);
+  SDL_RenderFillRect(w->getRenderer(),&menu);
+  w->setColor(0x00,0x00,0x00);
+  SDL_RenderDrawRect(w->getRenderer(),&menu);
+  w->setColor(prev);
 }
 
-int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
+int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<WindowWrapper> w,
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const GuiElement&)> leftCallback,
                        std::function<void(const GuiElement&)> rightCallback) const
 {
@@ -108,12 +83,12 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
   Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
   buttons.clear();
   for(const auto &t : textureNames){
-    buttons.emplace_back(offsetX,currentY,padding,padding);
+    buttons.emplace_back(w,offsetX,currentY,padding,padding);
     Button &current = buttons.back();
-    auto iconDimensions = current.setIcon(w,t.second.texture,iconMaxSide,iconSep);
+    auto iconDimensions = current.setIcon(t.second.texture,iconMaxSide,iconSep);
     maxTextWidth = buttonWidth-padding-padding-iconDimensions.first-iconSep;
     current.setTextAreaWidth(maxTextWidth);
-    current.setText(w,buttonFont,t.second.name);
+    current.setText(buttonFont,t.second.name);
     currentY += current.getHeight() + TileMenuItemsMargin;
     current.setBackgroundColor({0x38,0x48,0x61,0xFF});
     current.setHoverColor({0x4F,0x75,0x8A,0xFF});
@@ -128,9 +103,9 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, WindowWrapper &w,
 
 void App::run()
 {
-  WindowWrapper mainWindow(1366,768);
+  std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
   int tileSize = 32;
-  mainWindow.show();
+  mainWindow->show();
   SDL_Event e;
   int currentTile = 1;
   Timer capTimer;
@@ -141,15 +116,15 @@ void App::run()
   SDL_Rect tileMenuCamera = {0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset};
   std::map<int,TextureName> idToTextureName;
   std::vector<Tile> tiles;
-  ListMenu buttonList(5,5,3,5);
+  ListMenu buttonList(mainWindow,5,5,3,5);
   std::vector<Button> menuButtons;
-  SelectionBox leftMouseBox({0x00,0xFF,0x00,0x44},{0x00,0xFF,0x00,0x88});
-  SelectionBox rightMouseBox({0xFF,0x00,0x00,0x44},{0xFF,0x00,0x00,0x88});
+  SelectionBox leftMouseBox(mainWindow,{0x00,0xFF,0x00,0x44},{0x00,0xFF,0x00,0x88});
+  SelectionBox rightMouseBox(mainWindow,{0xFF,0x00,0x00,0x44},{0xFF,0x00,0x00,0x88});
   bool regenerateMenu = false;
   bool tilesLoad = false;
   int menuButtonsHeight = 0;
   bool quit = false;
-  generateButtons(buttonList,mainWindow,{
+  generateButtons(buttonList,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
     [&quit](const GuiElement&){ quit = true; }
   });
@@ -267,22 +242,22 @@ void App::run()
         break;
       }
     }
-    mainWindow.clear();
+    mainWindow->clear();
     drawMenuBackground(mainWindow,menuView);
-    mainWindow.setClip(&tileMenu);
+    mainWindow->setClip(&tileMenu);
     for(const auto &b : menuButtons)
-      b.render(mainWindow,tileMenuCamera);
-    mainWindow.setClip();
-    mainWindow.setViewport(&editorView);
+      b.render(tileMenuCamera);
+    mainWindow->setClip();
+    mainWindow->setViewport(&editorView);
     for(auto &tile : tiles)
       tile.render(mainWindow);
     if(leftMouseBox.isHold())
-      leftMouseBox.render(mainWindow);
+      leftMouseBox.render();
     if(rightMouseBox.isHold())
-      rightMouseBox.render(mainWindow);
-    mainWindow.setViewport();
-    buttonList.render(mainWindow);
-    mainWindow.redraw();
+      rightMouseBox.render();
+    mainWindow->setViewport();
+    buttonList.render();
+    mainWindow->redraw();
     if(capTimer.getTicks() < TicksPerFrame)
       SDL_Delay(TicksPerFrame - capTimer.getTicks());
   }

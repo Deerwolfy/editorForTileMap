@@ -8,7 +8,8 @@
 
 class GuiElement {
 public:
-  GuiElement(int x, int y, int width, int height): frame({x,y,width,height}) { }
+  GuiElement(std::shared_ptr<WindowWrapper> window, int x, int y, int width, int height): frame({x,y,width,height}),
+  parentWindow(window) { }
   GuiElement(const GuiElement&) = default;
   GuiElement(GuiElement&&) = default;
   GuiElement& operator=(const GuiElement&) = default;
@@ -30,7 +31,7 @@ public:
     { rightClickCallback = callback; }
   virtual void setBackgroundColor(const SDL_Color&);
   virtual void setBorderColor(const SDL_Color&);
-  virtual void render(WindowWrapper&) const = 0;
+  virtual void render() const = 0;
 protected:
   void rightClick() const;
   void leftClick() const;
@@ -43,6 +44,7 @@ protected:
   SDL_Color backgroundColor;
   std::function<void(const GuiElement&)> leftClickCallback;
   std::function<void(const GuiElement&)> rightClickCallback;
+  std::shared_ptr<WindowWrapper> parentWindow;
 };
 
 #endif

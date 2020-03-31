@@ -11,9 +11,9 @@
 
 class ListMenu : public GuiElement {
 public:
-  ListMenu(int,int,int,int);
-  void setTitle(WindowWrapper&,const Font&,const std::string&);
-  void addEntry(WindowWrapper&,const Font&, const std::string&,std::function<void(const GuiElement&)>);
+  ListMenu(std::shared_ptr<WindowWrapper>,int,int,int,int);
+  void setTitle(const Font&,const std::string&);
+  void addEntry(const Font&, const std::string&,std::function<void(const GuiElement&)>);
   void setHoverColor(SDL_Color);
   void setBackgroundColor(const SDL_Color &color) override;
   void setBorderColor(const SDL_Color &color) override;
@@ -22,7 +22,7 @@ public:
   void doClose() { open = false; }
   void toggle();
   bool isOpen() const { return open; }
-  void render(WindowWrapper&) const override;
+  void render() const override;
   void mouseMove(const SDL_Event&);
   void click(const SDL_Event&);
 private:

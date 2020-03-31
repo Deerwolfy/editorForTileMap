@@ -2,6 +2,7 @@
 #define SPRITELOADCALLBACK_H
 
 #include<map>
+#include<memory>
 #include"guiElement.h"
 #include<string>
 #include"textureName.h"
@@ -10,12 +11,12 @@
 
 class SpriteLoadCallback {
 public:
-  SpriteLoadCallback(std::map<int,TextureName> &idToTextureName, WindowWrapper &w, bool &reg):
-    idToTextureName(idToTextureName), w(w), regenerate(reg) { }
+  SpriteLoadCallback(std::map<int,TextureName> &idToTextureName, std::shared_ptr<WindowWrapper> window, bool &reg):
+    idToTextureName(idToTextureName), window(window), regenerate(reg) { }
   void operator()(const GuiElement&);
 private:
   std::map<int,TextureName> &idToTextureName;
-  WindowWrapper &w;
+  std::shared_ptr<WindowWrapper> window;
   bool &regenerate;
 };
 

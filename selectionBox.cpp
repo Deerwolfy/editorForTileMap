@@ -3,18 +3,18 @@
 void SelectionBox::setEnd(int x, int y)
 {
   if(startPoint.x < x){
-    selection.x = startPoint.x;
-    selection.w = x - startPoint.x;
+    frame.x = startPoint.x;
+    frame.w = x - startPoint.x;
   } else {
-    selection.x = x;
-    selection.w = startPoint.x - x;
+    frame.x = x;
+    frame.w = startPoint.x - x;
   }
   if(startPoint.y < y){
-    selection.y = startPoint.y;
-    selection.h = y - startPoint.y;
+    frame.y = startPoint.y;
+    frame.h = y - startPoint.y;
   } else {
-    selection.y = y;
-    selection.h = startPoint.y - y;
+    frame.y = y;
+    frame.h = startPoint.y - y;
   }
 }
 
@@ -22,19 +22,19 @@ void SelectionBox::setStart(int x, int y)
 {
   startPoint.x = x;
   startPoint.y = y;
-  selection.x = x;
-  selection.y = y;
-  selection.w = 0;
-  selection.h = 0;
+  frame.x = x;
+  frame.y = y;
+  frame.w = 0;
+  frame.h = 0;
   hold = true;
 }
 
-void SelectionBox::render(WindowWrapper &w) const
+void SelectionBox::render() const
 {
-  SDL_Color prev = w.getColor();
-  w.setColor(borderColor);
-  w.drawRect(selection);
-  w.setColor(backgroundColor);
-  w.fillRect(selection);
-  w.setColor(prev);
+  SDL_Color prev = parentWindow->getColor();
+  parentWindow->setColor(borderColor);
+  parentWindow->drawRect(frame);
+  parentWindow->setColor(backgroundColor);
+  parentWindow->fillRect(frame);
+  parentWindow->setColor(prev);
 }

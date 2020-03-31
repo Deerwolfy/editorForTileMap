@@ -1,33 +1,41 @@
 #include"textField.h"
 
-void TextField::render(WindowWrapper &w) const
+void TextField::render() const
 {
   if(!shown)
     return;
-  SDL_Color prev = w.getColor();
+  SDL_Color prev = parentWindow->getColor();
   if(borderColorIsSet){
-      w.setColor(borderColor);
-      w.drawRect(frame);
+      parentWindow->setColor(borderColor);
+      parentWindow->drawRect(frame);
   }
   if(backgroundColorIsSet){
-      w.setColor(backgroundColor);
-      w.fillRect(frame);
+      parentWindow->setColor(backgroundColor);
+      parentWindow->fillRect(frame);
   }
+  int cursorX = frame.x+5+textTexture.getWidth();
   if(!empty){
-    if(textTexture.getWidth() > frame.w-10){
-      SDL_Rect lastChars = {textTexture.getWidth()-frame.w+10,0,frame.w-10,textTexture.getHeight()};
-      textTexture.render(w,frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2,&lastChars);
+    int rightPadding = 10+cursor.getWidth();
+    if(textTexture.getWidth() > frame.w-rightPadding){
+      SDL_Rect lastChars = {textTexture.getWidth()-frame.w+rightPadding,0,frame.w-rightPadding,textTexture.getHeight()};
+      textTexture.render(parentWindow,frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2,&lastChars);
+      cursorX = frame.x+5+lastChars.w;
     } else {
-      textTexture.render(w,frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2);
+      textTexture.render(parentWindow,frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2);
     }
   }
-  w.setColor(prev);
+  if(animationTimer.getTicks() >= 2000)
+    animationTimer.start();
+  else if(animationTimer.getTicks() >= 1000)
+    cursor.render(parentWindow,cursorX,frame.y+(frame.h-cursor.getHeight())/2);
+  parentWindow->setColor(prev);
 }
 
-void TextField::regenerateText(WindowWrapper &w)
+void TextField::regenerateText()
 {
+  cursor.loadText(parentWindow,textFont,"_");
   if(!text.length())
     empty = true;
   else
-    textTexture.loadText(w,textFont,text);
+    textTexture.loadText(parentWindow,textFont,text);
 }

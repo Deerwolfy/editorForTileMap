@@ -2,7 +2,7 @@
 #include"collisionDetector.h"
 #include<iostream>
 
-void Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
+void Button::setText(const Font &font, const std::string &t)
 {
   int textWidth = font.getTextWH(t).first;
   std::string newText = t;
@@ -17,7 +17,7 @@ void Button::setText(WindowWrapper &w, const Font &font, const std::string &t)
   }
   else
     frame.w += textWidth;
-  text.loadText(w,font,newText);
+  text.loadText(parentWindow,font,newText);
   if(iconIsSet){
     if(text.getHeight() > icon.getHeight())
       frame.h += text.getHeight() - icon.getHeight();
@@ -42,19 +42,19 @@ void Button::setHoverColor(const SDL_Color &color)
   hoverIsSet = true;
 }
 
-std::pair<int,int> Button::setIcon(WindowWrapper &w, Texture iconTexture,  int maxDimension, int iconRightPadding)
+std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int iconRightPadding)
 {
   if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){
     if(iconTexture.getWidth() > iconTexture.getHeight()){
       double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
-      iconTexture.resize(w,maxDimension,maxDimension*ratio);
+      iconTexture.resize(parentWindow,maxDimension,maxDimension*ratio);
     }
     else if(iconTexture.getWidth() < iconTexture.getHeight()){
       double ratio = iconTexture.getWidth()/static_cast<double>(iconTexture.getHeight());
-      iconTexture.resize(w,maxDimension*ratio,maxDimension);
+      iconTexture.resize(parentWindow,maxDimension*ratio,maxDimension);
     }
     else{
-      iconTexture.resize(w,maxDimension,maxDimension);
+      iconTexture.resize(parentWindow,maxDimension,maxDimension);
     }
   }
   icon = iconTexture;
@@ -89,27 +89,27 @@ void Button::setLeftPadding(int padding)
   frame.w += padding;
 }
 
-void Button::render(WindowWrapper &w) const
+void Button::render() const
 {
   if(!shown)
     return;
-  SDL_Color prev = w.getColor();
+  SDL_Color prev = parentWindow->getColor();
   if(backgroundColorIsSet){
-    w.setColor(activeBackground);
-    SDL_RenderFillRect(w.getRenderer(),&frame);
+    parentWindow->setColor(activeBackground);
+    SDL_RenderFillRect(parentWindow->getRenderer(),&frame);
   }
   if(borderColorIsSet){
-    w.setColor(borderColor);
-    SDL_RenderDrawRect(w.getRenderer(),&frame);
+    parentWindow->setColor(borderColor);
+    SDL_RenderDrawRect(parentWindow->getRenderer(),&frame);
   }
   if(iconIsSet)
-    icon.render(w,frame.x+leftPadding,frame.y+topPadding);
+    icon.render(parentWindow,frame.x+leftPadding,frame.y+topPadding);
   if(textIsSet)
-    text.render(w,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
-  w.setColor(prev);
+    text.render(parentWindow,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
+  parentWindow->setColor(prev);
 }
 
-void Button::render(WindowWrapper &w, SDL_Rect camera) const
+void Button::render(SDL_Rect camera) const
 {
   if(!shown)
     return;
@@ -119,21 +119,21 @@ void Button::render(WindowWrapper &w, SDL_Rect camera) const
     return;
   if(frame.y+frame.h <= camera.y || frame.y >= camera.y+camera.h)
     return;
-  SDL_Color prev = w.getColor();
+  SDL_Color prev = parentWindow->getColor();
   SDL_Rect relativeFrame = {relativeX,relativeY,frame.w,frame.h};
   if(backgroundColorIsSet){
-    w.setColor(activeBackground);
-    SDL_RenderFillRect(w.getRenderer(),&relativeFrame);
+    parentWindow->setColor(activeBackground);
+    SDL_RenderFillRect(parentWindow->getRenderer(),&relativeFrame);
   }
   if(borderColorIsSet){
-    w.setColor(borderColor);
-    SDL_RenderDrawRect(w.getRenderer(),&relativeFrame);
+    parentWindow->setColor(borderColor);
+    SDL_RenderDrawRect(parentWindow->getRenderer(),&relativeFrame);
   }
   if(iconIsSet)
-    icon.render(w,frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
+    icon.render(parentWindow,frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
   if(textIsSet)
-    text.render(w,frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
-  w.setColor(prev);
+    text.render(parentWindow,frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
+  parentWindow->setColor(prev);
 }
 
 int Button::click(const SDL_Event &e) const

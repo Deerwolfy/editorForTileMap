@@ -13,16 +13,16 @@
 
 class Button : public GuiElement {
 public:
-  Button(int x, int y, int tbPadding, int rlPadding):
+  Button(std::shared_ptr<WindowWrapper> window, int x, int y, int tbPadding, int rlPadding):
     topPadding(tbPadding), bottomPadding(tbPadding), rightPadding(rlPadding), leftPadding(rlPadding), 
-    GuiElement(x,y,rlPadding+rlPadding,tbPadding+tbPadding) { }
-  void setText(WindowWrapper&, const Font&, const std::string&);
+    GuiElement(window, x,y,rlPadding+rlPadding,tbPadding+tbPadding) { }
+  void setText(const Font&, const std::string&);
   void setHoverColor(const SDL_Color&);
   void setBackgroundColor(const SDL_Color&) override;
-  std::pair<int,int> setIcon(WindowWrapper&, Texture, int maxDimension = 32, int iconRightPadding = 0);
+  std::pair<int,int> setIcon(Texture, int maxDimension = 32, int iconRightPadding = 0);
   void setTextAreaWidth(int width) { textAreaWidth = width; };
-  void render(WindowWrapper&) const override;
-  void render(WindowWrapper&,SDL_Rect) const;
+  void render() const override;
+  void render(SDL_Rect) const;
   void mouseMove(const SDL_Event&);
   void mouseMove(const SDL_Event&, SDL_Rect);
   int click(const SDL_Event&) const;

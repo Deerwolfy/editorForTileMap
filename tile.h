@@ -9,7 +9,7 @@ public:
   Tile(const Texture &texture): texture(texture), x(0), y(0) { }
   Tile(const Texture &texture, int x, int y):
     texture(texture), x(x), y(y) { }
-  void render(WindowWrapper &w) const { texture.render(w,x,y); }
+  void render(std::shared_ptr<WindowWrapper> window) const { texture.render(window,x,y); }
   int getX() const { return x; }
   int getY() const { return y; }
   void setX(int x) { this->x = x; }

@@ -2,8 +2,8 @@
 #include<iostream>
 #include"collisionDetector.h"
 
-ListMenu::ListMenu(int x, int y, int tbPadding, int rlPadding):
-    mainButton(x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight()), GuiElement(x,currentY,0,0)
+ListMenu::ListMenu(std::shared_ptr<WindowWrapper> window, int x, int y, int tbPadding, int rlPadding):
+    GuiElement(window, x,currentY,0,0), mainButton(window, x,y,tbPadding,rlPadding), currentY(y+mainButton.getHeight())
 {
   mainButton.setLeftClickCallback([this](const GuiElement&)->void {
     toggle();
@@ -27,19 +27,19 @@ void ListMenu::toggle()
   
 }
 
-void ListMenu::setTitle(WindowWrapper &w, const Font &font, const std::string &title)
+void ListMenu::setTitle(const Font &font, const std::string &title)
 {
-  mainButton.setText(w,font,title);
+  mainButton.setText(font,title);
   currentY = mainButton.getHeight() + mainButton.getY();
   frame.y = currentY;
 }
 
-void ListMenu::addEntry(WindowWrapper &w, const Font &font, const std::string &text,
+void ListMenu::addEntry(const Font &font, const std::string &text,
                             std::function<void(const GuiElement&)> callback)
 {
-  menuButtons.emplace_back(frame.x,currentY,mainButton.getTopPadding(),mainButton.getLeftPadding());
+  menuButtons.emplace_back(parentWindow,frame.x,currentY,mainButton.getTopPadding(),mainButton.getLeftPadding());
   Button &current = menuButtons.back();
-  current.setText(w,font,text);
+  current.setText(font,text);
   current.setLeftClickCallback(callback);
   if(frame.w < current.getWidth()){
     frame.w = current.getWidth();
@@ -86,14 +86,14 @@ void ListMenu::setHoverColor(SDL_Color color)
   hoverIsSet = true;
 }
 
-void ListMenu::render(WindowWrapper &w) const
+void ListMenu::render() const
 {
   if(!shown)
     return;
-  mainButton.render(w);
+  mainButton.render();
   if(open){
     for(const auto &b : menuButtons)
-      b.render(w);
+      b.render();
   }
 }
 
