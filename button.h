@@ -14,8 +14,8 @@
 class Button : public GuiElement {
 public:
   Button(std::shared_ptr<WindowWrapper> window, int x, int y, int tbPadding, int rlPadding):
-    topPadding(tbPadding), bottomPadding(tbPadding), rightPadding(rlPadding), leftPadding(rlPadding), 
-    GuiElement(window, x,y,rlPadding+rlPadding,tbPadding+tbPadding) { }
+    GuiElement(window, x,y,rlPadding+rlPadding,tbPadding+tbPadding), topPadding(tbPadding), bottomPadding(tbPadding),
+    rightPadding(rlPadding), leftPadding(rlPadding) { }
   void setText(const Font&, const std::string&);
   void setHoverColor(const SDL_Color&);
   void setBackgroundColor(const SDL_Color&) override;

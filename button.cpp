@@ -1,6 +1,5 @@
 #include"button.h"
 #include"collisionDetector.h"
-#include<iostream>
 
 void Button::setText(const Font &font, const std::string &t)
 {

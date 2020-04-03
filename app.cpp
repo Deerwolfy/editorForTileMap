@@ -1,4 +1,17 @@
 #include"app.h"
+#include<SDL_image.h>
+#include<SDL_ttf.h>
+#include<stdexcept>
+#include"timer.h"
+#include"font.h"
+#include"texture.h"
+#include"tile.h"
+#include"selectionBox.h"
+#include"textField.h"
+#include"spriteLoadCallback.h"
+#include"changeTileIdCallback.h"
+#include"collisionDetector.h"
+#include"popupInputBox.h"
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -43,12 +56,12 @@ void App::defineViews(std::shared_ptr<WindowWrapper> w, SDL_Rect &menu, SDL_Rect
   editor.h = w->getHeight();
 }
 
-void App::generateButtons(ListMenu &buttons, Callbacks callbacks) const
+void App::generateButtons(ListMenu &buttons, const Callbacks &callbacks, const AppColors &colors) const
 {
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
   buttons.setTitle(buttonFont,"Editor");
-  buttons.setBackgroundColor({0x1D,0x24,0x30,0xFF});
-  buttons.setHoverColor({0x4F,0x75,0x8A,0xFF});
+  buttons.setBackgroundColor(colors.buttonBackground);
+  buttons.setHoverColor(colors.buttonHover);
   buttons.addEntry(buttonFont,"Sprite Folder",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Save level",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Load level",callbacks.spriteLoad);
@@ -59,19 +72,19 @@ void App::generateButtons(ListMenu &buttons, Callbacks callbacks) const
   buttons.addEntry(buttonFont,"Quit",callbacks.quitCallback);
 }
 
-void App::drawMenuBackground(std::shared_ptr<WindowWrapper> w, const SDL_Rect &menu) const
+void App::drawMenuBackground(std::shared_ptr<WindowWrapper> w, const SDL_Rect &menu, const AppColors &colors) const
 {
   SDL_Color prev = w->getColor();
-  w->setColor(0x2B,0x37,0x4A);
-  SDL_RenderFillRect(w->getRenderer(),&menu);
-  w->setColor(0x00,0x00,0x00);
-  SDL_RenderDrawRect(w->getRenderer(),&menu);
+  w->setColor(colors.menuBackground);
+  w->fillRect(menu);
+  w->setColor(colors.menuBorder);
+  w->drawRect(menu);
   w->setColor(prev);
 }
 
 int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<WindowWrapper> w,
                        std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const GuiElement&)> leftCallback,
-                       std::function<void(const GuiElement&)> rightCallback) const
+                       std::function<void(const GuiElement&)> rightCallback, const AppColors &colors) const
 {
   int offsetX = TilemenuXOffset;
   int currentY = TileMenuYOffset;
@@ -80,7 +93,7 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<W
   int iconSep = 5;
   int buttonWidth = parent.w - offsetX - offsetX;
   int maxTextWidth;
-  Font buttonFont("NotoSans-Regular.ttf", 14, {0xFF,0xFF,0xFF,0xFF});
+  Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
   buttons.clear();
   for(const auto &t : textureNames){
     buttons.emplace_back(w,offsetX,currentY,padding,padding);
@@ -90,9 +103,9 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<W
     current.setTextAreaWidth(maxTextWidth);
     current.setText(buttonFont,t.second.name);
     currentY += current.getHeight() + TileMenuItemsMargin;
-    current.setBackgroundColor({0x38,0x48,0x61,0xFF});
-    current.setHoverColor({0x4F,0x75,0x8A,0xFF});
-    current.setBorderColor({0x00,0x00,0x00,0xFF});
+    current.setBackgroundColor(colors.buttonBackground);
+    current.setHoverColor(colors.buttonHover);
+    current.setBorderColor(colors.buttonBorder);
     current.setElementId(t.first);
     current.setLeftClickCallback(leftCallback);
     current.setRightClickCallback(rightCallback);
@@ -103,7 +116,9 @@ int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<W
 
 void App::run()
 {
+  AppColors colors;
   std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
+  std::shared_ptr<PopupInputBox> popup;
   int tileSize = 32;
   mainWindow->show();
   SDL_Event e;
@@ -118,8 +133,8 @@ void App::run()
   std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
   std::vector<Button> menuButtons;
-  SelectionBox leftMouseBox(mainWindow,{0x00,0xFF,0x00,0x44},{0x00,0xFF,0x00,0x88});
-  SelectionBox rightMouseBox(mainWindow,{0xFF,0x00,0x00,0x44},{0xFF,0x00,0x00,0x88});
+  SelectionBox leftMouseBox(mainWindow,colors.leftSelection,colors.leftSelectionBorder);
+  SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
   bool tilesLoad = false;
   int menuButtonsHeight = 0;
@@ -127,7 +142,7 @@ void App::run()
   generateButtons(buttonList,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
     [&quit](const GuiElement&){ quit = true; }
-  });
+  }, colors);
   while(!quit){
     capTimer.start();
     while(SDL_PollEvent(&e) != 0){
@@ -137,7 +152,7 @@ void App::run()
         break;
         case SDL_MOUSEBUTTONDOWN:
             buttonList.click(e);
-            if(!buttonList.isOpen()){
+            if(!buttonList.isOpen() && !popup){
               for(auto &b : menuButtons)
                 b.click(e,tileMenuCamera);
               if(e.button.button == SDL_BUTTON_LEFT){
@@ -154,66 +169,85 @@ void App::run()
             if(regenerateMenu){
               menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
                 [&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId();},
-                ChangeTileIdCallback(mainWindow,idToTextureName)
+                [&popup,&colors,&mainWindow,&idToTextureName](const GuiElement&)->void{
+                  popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
+                  popup->setBackgroundColor(colors.popupBackground);
+                  popup->setBorderColor(colors.popupBorder);
+                  popup->setActionButtonLabel("Change");
+                  popup->setTitle("Change tile id");
+                  popup->setActionCallback([&popup,&mainWindow,&idToTextureName] (const GuiElement &e)->void
+                  {
+                    ChangeTileIdCallback callback(mainWindow,idToTextureName);
+                    callback(e);
+                    popup.reset();
+                  });
+                  popup->setCloseCallback([&popup](const GuiElement&){popup.reset();});
+                }, colors
               );
               regenerateMenu = false;
               tilesLoad = true;
             }
         break;
         case SDL_MOUSEBUTTONUP:
-          if(!buttonList.isOpen()){
-              if(e.button.button == SDL_BUTTON_LEFT){
-                if(isCollide({e.button.x,e.button.y},editorView) && tilesLoad){
-                  SDL_Point origin = leftMouseBox.getOrigin();
-                  int xOffset = origin.x%tileSize;
-                  int yOffset = origin.y%tileSize;
-                  int startX = origin.x - xOffset;
-                  int countX = (leftMouseBox.getWidth()+xOffset)/tileSize + 1;
-                  int w = leftMouseBox.getWidth();
-                  int currentY = origin.y - yOffset;
-                  int countY = (leftMouseBox.getHeight()+yOffset)/tileSize + 1;
-                  while(countY--){
-                    int currentX = startX;
-                    int count = countX;
-                    while(count--){
-                      if(isCollide({currentX,currentY},tiles) == tiles.size())
-                        tiles.emplace_back(idToTextureName[currentTile].texture,currentX,currentY);
-                      currentX += tileSize;
-                    }
-                    currentY += tileSize;
+          if(popup){
+            popup->click(e);
+          }
+          else if(!buttonList.isOpen()){
+            if(e.button.button == SDL_BUTTON_LEFT){
+              if(isCollide({e.button.x,e.button.y},editorView) && tilesLoad){
+                SDL_Point origin = leftMouseBox.getOrigin();
+                int xOffset = origin.x%tileSize;
+                int yOffset = origin.y%tileSize;
+                int startX = origin.x - xOffset;
+                int countX = (leftMouseBox.getWidth()+xOffset)/tileSize + 1;
+                int w = leftMouseBox.getWidth();
+                int currentY = origin.y - yOffset;
+                int countY = (leftMouseBox.getHeight()+yOffset)/tileSize + 1;
+                while(countY--){
+                  int currentX = startX;
+                  int count = countX;
+                  while(count--){
+                    if(isCollide({currentX,currentY},tiles) == tiles.size())
+                      tiles.emplace_back(idToTextureName[currentTile].texture,currentX,currentY);
+                    currentX += tileSize;
                   }
+                  currentY += tileSize;
                 }
-                leftMouseBox.unhold();
-              }
-              else if(e.button.button == SDL_BUTTON_RIGHT){
-                if(isCollide({e.button.x,e.button.y},editorView)){
-                  SDL_Point origin = rightMouseBox.getOrigin();
-                  int xOffset = origin.x%tileSize;
-                  int yOffset = origin.y%tileSize;
-                  int startX = origin.x - xOffset;
-                  int countX = (rightMouseBox.getWidth()+xOffset)/tileSize + 1;
-                  int w = rightMouseBox.getWidth();
-                  int currentY = origin.y - yOffset;
-                  int countY = (rightMouseBox.getHeight()+yOffset)/tileSize + 1;
-                  while(countY--){
-                    int currentX = startX;
-                    int count = countX;
-                    while(count--){
-                      std::size_t index = isCollide({currentX,currentY},tiles);
-                      if(index != tiles.size())
-                        tiles.erase(std::begin(tiles) + index);
-                      currentX += tileSize;
-                    }
-                    currentY += tileSize;
-                  }
-                }
-                rightMouseBox.unhold();
               }
             }
+            else if(e.button.button == SDL_BUTTON_RIGHT){
+              if(isCollide({e.button.x,e.button.y},editorView)){
+                SDL_Point origin = rightMouseBox.getOrigin();
+                int xOffset = origin.x%tileSize;
+                int yOffset = origin.y%tileSize;
+                int startX = origin.x - xOffset;
+                int countX = (rightMouseBox.getWidth()+xOffset)/tileSize + 1;
+                int w = rightMouseBox.getWidth();
+                int currentY = origin.y - yOffset;
+                int countY = (rightMouseBox.getHeight()+yOffset)/tileSize + 1;
+                while(countY--){
+                  int currentX = startX;
+                  int count = countX;
+                  while(count--){
+                    std::size_t index = isCollide({currentX,currentY},tiles);
+                    if(index != tiles.size())
+                      tiles.erase(std::begin(tiles) + index);
+                    currentX += tileSize;
+                  }
+                  currentY += tileSize;
+                }
+              }
+            }
+          }
+          leftMouseBox.unhold();
+          rightMouseBox.unhold();
         break;
         case SDL_MOUSEMOTION:
           buttonList.mouseMove(e);
-          if(!buttonList.isOpen()){
+          if(popup){
+            popup->mouseMove(e);
+          }
+          else if(!buttonList.isOpen()){
             for(auto &b : menuButtons)
               b.mouseMove(e,tileMenuCamera);
             if(leftMouseBox.isHold()){
@@ -225,25 +259,39 @@ void App::run()
           }
         break;
         case SDL_MOUSEWHEEL:
-          int currentMouseX, currentMouseY;
-          SDL_GetMouseState(&currentMouseX,&currentMouseY);
-          if(e.wheel.y > 0){
-            if(isCollide({currentMouseX, currentMouseY}, menuView)){
-              if(tileMenuCamera.y >= TileMenuScrollSpeed)
-                tileMenuCamera.y -= TileMenuScrollSpeed;
+          if(!buttonList.isOpen() && !popup){
+            int currentMouseX, currentMouseY;
+            SDL_GetMouseState(&currentMouseX,&currentMouseY);
+            if(e.wheel.y > 0){
+              if(isCollide({currentMouseX, currentMouseY}, menuView)){
+                if(tileMenuCamera.y >= TileMenuScrollSpeed)
+                  tileMenuCamera.y -= TileMenuScrollSpeed;
+              }
+            }
+            else if(e.wheel.y < 0){
+              if(isCollide({currentMouseX, currentMouseY}, menuView)){
+                if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
+                  tileMenuCamera.y += TileMenuScrollSpeed;
+              }
             }
           }
-          else if(e.wheel.y < 0){
-            if(isCollide({currentMouseX, currentMouseY}, menuView)){
-              if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
-                tileMenuCamera.y += TileMenuScrollSpeed;
-            }
+        break;
+        case SDL_KEYDOWN:
+          switch(e.key.keysym.sym){
+            case SDLK_BACKSPACE:
+              if(popup)
+                popup->backspace();
+            break;
           }
+        break;
+        case SDL_TEXTINPUT:
+          if(popup)
+            popup->textInput(e);
         break;
       }
     }
     mainWindow->clear();
-    drawMenuBackground(mainWindow,menuView);
+    drawMenuBackground(mainWindow,menuView,colors);
     mainWindow->setClip(&tileMenu);
     for(const auto &b : menuButtons)
       b.render(tileMenuCamera);
@@ -257,6 +305,8 @@ void App::run()
       rightMouseBox.render();
     mainWindow->setViewport();
     buttonList.render();
+    if(popup)
+      popup->render();
     mainWindow->redraw();
     if(capTimer.getTicks() < TicksPerFrame)
       SDL_Delay(TicksPerFrame - capTimer.getTicks());
