@@ -250,7 +250,7 @@ void App::run()
     mainWindow->setClip();
     mainWindow->setViewport(&editorView);
     for(auto &tile : tiles)
-      tile.render(mainWindow);
+      tile.render(mainWindow->getRenderer());
     if(leftMouseBox.isHold())
       leftMouseBox.render();
     if(rightMouseBox.isHold())

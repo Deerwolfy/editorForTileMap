@@ -3,13 +3,14 @@
 
 #include"texture.h"
 #include"windowWrapper.h"
+#include<SDL.h>
 
 class Tile {
 public:
   Tile(const Texture &texture): texture(texture), x(0), y(0) { }
   Tile(const Texture &texture, int x, int y):
     texture(texture), x(x), y(y) { }
-  void render(std::shared_ptr<WindowWrapper> window) const { texture.render(window,x,y); }
+  void render(SDL_Renderer *renderer) const { texture.render(renderer,x,y); }
   int getX() const { return x; }
   int getY() const { return y; }
   void setX(int x) { this->x = x; }

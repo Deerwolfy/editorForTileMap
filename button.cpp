@@ -17,7 +17,7 @@ void Button::setText(const Font &font, const std::string &t)
   }
   else
     frame.w += textWidth;
-  text.loadText(parentWindow,font,newText);
+  text.loadText(parentWindow->getRenderer(),font,newText);
   if(iconIsSet){
     if(text.getHeight() > icon.getHeight())
       frame.h += text.getHeight() - icon.getHeight();
@@ -47,14 +47,14 @@ std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int i
   if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){
     if(iconTexture.getWidth() > iconTexture.getHeight()){
       double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
-      iconTexture.resize(parentWindow,maxDimension,maxDimension*ratio);
+      iconTexture.resize(parentWindow->getRenderer(),maxDimension,maxDimension*ratio);
     }
     else if(iconTexture.getWidth() < iconTexture.getHeight()){
       double ratio = iconTexture.getWidth()/static_cast<double>(iconTexture.getHeight());
-      iconTexture.resize(parentWindow,maxDimension*ratio,maxDimension);
+      iconTexture.resize(parentWindow->getRenderer(),maxDimension*ratio,maxDimension);
     }
     else{
-      iconTexture.resize(parentWindow,maxDimension,maxDimension);
+      iconTexture.resize(parentWindow->getRenderer(),maxDimension,maxDimension);
     }
   }
   icon = iconTexture;
@@ -103,9 +103,9 @@ void Button::render() const
     SDL_RenderDrawRect(parentWindow->getRenderer(),&frame);
   }
   if(iconIsSet)
-    icon.render(parentWindow,frame.x+leftPadding,frame.y+topPadding);
+    icon.render(parentWindow->getRenderer(),frame.x+leftPadding,frame.y+topPadding);
   if(textIsSet)
-    text.render(parentWindow,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
+    text.render(parentWindow->getRenderer(),frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
   parentWindow->setColor(prev);
 }
 
@@ -130,9 +130,9 @@ void Button::render(SDL_Rect camera) const
     SDL_RenderDrawRect(parentWindow->getRenderer(),&relativeFrame);
   }
   if(iconIsSet)
-    icon.render(parentWindow,frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
+    icon.render(parentWindow->getRenderer(),frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
   if(textIsSet)
-    text.render(parentWindow,frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
+    text.render(parentWindow->getRenderer(),frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
   parentWindow->setColor(prev);
 }
 

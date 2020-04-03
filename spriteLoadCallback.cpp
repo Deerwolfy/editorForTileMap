@@ -29,7 +29,7 @@ void SpriteLoadCallback::operator()(const GuiElement&)
       format = fileName.substr(formatIndex, formatLength);
     if(format == ".png" || format == ".jpg"){
       std::cout << "Loading " << path + fileName << std::endl;
-      idToTextureName.emplace(spriteCount,TextureName{Texture(window,path + fileName),fileName});
+      idToTextureName.emplace(spriteCount,TextureName{Texture(window->getRenderer(),path + fileName),fileName});
       ++spriteCount;
     }
     else
