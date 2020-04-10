@@ -13,15 +13,16 @@ void TextField::render() const
       parentWindow->setColor(backgroundColor);
       parentWindow->fillRect(frame);
   }
-  int cursorX = frame.x+5+textTexture.getWidth();
+  int cursorX = frame.x+5;
   if(!empty){
     int rightPadding = 10+cursor.getWidth();
     if(textTexture.getWidth() > frame.w-rightPadding){
       SDL_Rect lastChars = {textTexture.getWidth()-frame.w+rightPadding,0,frame.w-rightPadding,textTexture.getHeight()};
       textTexture.render(parentWindow->getRenderer(),frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2,&lastChars);
-      cursorX = frame.x+5+lastChars.w;
+      cursorX += lastChars.w;
     } else {
       textTexture.render(parentWindow->getRenderer(),frame.x+5,frame.y+(frame.h-textTexture.getHeight())/2);
+      cursorX += textTexture.getWidth();
     }
   }
   if(animationTimer.getTicks() >= 2000)

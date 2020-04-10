@@ -119,6 +119,7 @@ void App::run()
   AppColors colors;
   std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
   std::shared_ptr<PopupInputBox> popup;
+  bool popupClose = false;
   int tileSize = 32;
   mainWindow->show();
   SDL_Event e;
@@ -165,27 +166,6 @@ void App::run()
                   rightMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
                 }
               }
-            }
-            if(regenerateMenu){
-              menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
-                [&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId();},
-                [&popup,&colors,&mainWindow,&idToTextureName](const GuiElement&)->void{
-                  popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
-                  popup->setBackgroundColor(colors.popupBackground);
-                  popup->setBorderColor(colors.popupBorder);
-                  popup->setActionButtonLabel("Change");
-                  popup->setTitle("Change tile id");
-                  popup->setActionCallback([&popup,&mainWindow,&idToTextureName] (const GuiElement &e)->void
-                  {
-                    ChangeTileIdCallback callback(mainWindow,idToTextureName);
-                    callback(e);
-                    popup.reset();
-                  });
-                  popup->setCloseCallback([&popup](const GuiElement&){popup.reset();});
-                }, colors
-              );
-              regenerateMenu = false;
-              tilesLoad = true;
             }
         break;
         case SDL_MOUSEBUTTONUP:
@@ -282,6 +262,14 @@ void App::run()
               if(popup)
                 popup->backspace();
             break;
+            case SDLK_ESCAPE:
+              if(popup)
+                popupClose = true;
+            break;
+            case SDLK_RETURN:
+              if(popup)
+                popup->confirm();
+            break;
           }
         break;
         case SDL_TEXTINPUT:
@@ -289,6 +277,33 @@ void App::run()
             popup->textInput(e);
         break;
       }
+    }
+    if(regenerateMenu){
+      menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
+        [&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId();},
+        [&popup,&popupClose,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
+          popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
+          popup->setBackgroundColor(colors.popupBackground);
+          popup->setBorderColor(colors.popupBorder);
+          popup->setActionButtonLabel("Change");
+          popup->setTitle("Change tile id");
+          popup->setElementId(e.getElementId());
+          popup->setActionCallback([&regenerateMenu,&popup,&popupClose,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
+          {
+            ChangeTileIdCallback callback(mainWindow,idToTextureName,tiles);
+            callback(*popup.get());
+            popupClose = true;
+            regenerateMenu = true;
+          });
+          popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
+        }, colors
+      );
+      regenerateMenu = false;
+      tilesLoad = true;
+    }
+    if(popupClose){
+      popup.reset();
+      popupClose = false;
     }
     mainWindow->clear();
     drawMenuBackground(mainWindow,menuView,colors);

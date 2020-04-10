@@ -24,6 +24,8 @@ public:
   std::string getInput() const { return inputField.str(); }
   void backspace();
   void render() const override;
+  void confirm() const { actionButton.leftClick(); }
+  void close() const { closeButton.leftClick(); }
 private:
   TextField inputField;
   Button closeButton;

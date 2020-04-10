@@ -32,9 +32,9 @@ public:
   virtual void setBackgroundColor(const SDL_Color&);
   virtual void setBorderColor(const SDL_Color&);
   virtual void render() const = 0;
-protected:
   void rightClick() const;
   void leftClick() const;
+protected:
   SDL_Rect frame;
   bool shown = true;
   bool borderColorIsSet = false;
