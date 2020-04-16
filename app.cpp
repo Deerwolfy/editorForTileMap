@@ -12,6 +12,8 @@
 #include"changeTileIdCallback.h"
 #include"collisionDetector.h"
 #include"popupInputBox.h"
+#include"fileSystemExplorer.h"
+#include<iostream>
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;

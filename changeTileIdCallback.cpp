@@ -8,11 +8,13 @@ void ChangeTileIdCallback::operator()(const PopupInputBox &b)
   int newId;
   int oldId = b.getElementId();
   userInput >> newId;
-  if(userInput.fail())
+  if(userInput.fail()){
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Error","Id must be a number!",nullptr);
     return;
+  }
   auto newIdTexture = idToTextureName.find(newId);
   if(newIdTexture != std::end(idToTextureName)){
-    std::string message("Id already mapped to ");
+    std::string message("Id is already mapped to ");
     message += newIdTexture->second.name;
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Error",message.c_str(),nullptr);
     return;
