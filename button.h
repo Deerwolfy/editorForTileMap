@@ -10,6 +10,7 @@
 #include<memory>
 #include<utility>
 #include"guiElement.h"
+#include"camera.h"
 
 class Button : public GuiElement {
 public:
@@ -22,11 +23,11 @@ public:
   std::pair<int,int> setIcon(Texture, int maxDimension = 32, int iconRightPadding = 0);
   void setTextAreaWidth(int width) { textAreaWidth = width; };
   void render() const override;
-  void render(SDL_Rect) const;
+  void render(const Camera&) const;
   void mouseMove(const SDL_Event&);
-  void mouseMove(const SDL_Event&, SDL_Rect);
+  void mouseMove(const SDL_Event&, const Camera&);
   int click(const SDL_Event&) const;
-  int click(const SDL_Event&, const SDL_Rect&) const;
+  int click(const SDL_Event&, const Camera&) const;
   void setTopPadding(int);
   void setBottomPadding(int);
   void setRightPadding(int);

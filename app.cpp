@@ -13,7 +13,7 @@
 #include"collisionDetector.h"
 #include"popupInputBox.h"
 #include"fileSystemExplorer.h"
-#include<iostream>
+#include"camera.h"
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -131,7 +131,8 @@ void App::run()
   SDL_Rect editorView;
   defineViews(mainWindow,menuView,editorView);
   SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
-  SDL_Rect tileMenuCamera = {0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset};
+  Camera tileMenuCamera(0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset);
+  tileMenuCamera.setYScrollSpeed(TileMenuScrollSpeed);
   std::map<int,TextureName> idToTextureName;
   std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
@@ -246,14 +247,12 @@ void App::run()
             SDL_GetMouseState(&currentMouseX,&currentMouseY);
             if(e.wheel.y > 0){
               if(isCollide({currentMouseX, currentMouseY}, menuView)){
-                if(tileMenuCamera.y >= TileMenuScrollSpeed)
-                  tileMenuCamera.y -= TileMenuScrollSpeed;
+                tileMenuCamera.scrollUp();
               }
             }
             else if(e.wheel.y < 0){
               if(isCollide({currentMouseX, currentMouseY}, menuView)){
-                if(tileMenuCamera.y + tileMenuCamera.h < menuButtonsHeight)
-                  tileMenuCamera.y += TileMenuScrollSpeed;
+                tileMenuCamera.scrollDown();
               }
             }
           }
@@ -300,6 +299,7 @@ void App::run()
           popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
         }, colors
       );
+      tileMenuCamera.setYScrollCap(menuButtonsHeight);
       regenerateMenu = false;
       tilesLoad = true;
     }

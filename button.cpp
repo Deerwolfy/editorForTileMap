@@ -108,18 +108,14 @@ void Button::render() const
   parentWindow->setColor(prev);
 }
 
-void Button::render(SDL_Rect camera) const
+void Button::render(const Camera &camera) const
 {
   if(!shown)
     return;
-  int relativeX = frame.x-camera.x;
-  int relativeY = frame.y-camera.y;
-  if(frame.x+frame.w <= camera.x || frame.x >= camera.x+camera.w)
-    return;
-  if(frame.y+frame.h <= camera.y || frame.y >= camera.y+camera.h)
+  if(!camera.isVisible(frame))
     return;
   SDL_Color prev = parentWindow->getColor();
-  SDL_Rect relativeFrame = {relativeX,relativeY,frame.w,frame.h};
+  SDL_Rect relativeFrame = camera.getRelativeRect(frame);
   if(backgroundColorIsSet){
     parentWindow->setColor(activeBackground);
     SDL_RenderFillRect(parentWindow->getRenderer(),&relativeFrame);
@@ -129,9 +125,9 @@ void Button::render(SDL_Rect camera) const
     SDL_RenderDrawRect(parentWindow->getRenderer(),&relativeFrame);
   }
   if(iconIsSet)
-    icon.render(parentWindow->getRenderer(),frame.x+leftPadding-camera.x,frame.y+topPadding-camera.y);
+    icon.render(parentWindow->getRenderer(),relativeFrame.x+leftPadding,relativeFrame.y+topPadding);
   if(textIsSet)
-    text.render(parentWindow->getRenderer(),frame.x+leftPadding+textOffsetX-camera.x,frame.y+topPadding+textOffsetY-camera.y);
+    text.render(parentWindow->getRenderer(),relativeFrame.x+leftPadding+textOffsetX,relativeFrame.y+topPadding+textOffsetY);
   parentWindow->setColor(prev);
 }
 
@@ -147,9 +143,9 @@ int Button::click(const SDL_Event &e) const
   return 0;
 }
 
-int Button::click(const SDL_Event &e, const SDL_Rect &camera) const
+int Button::click(const SDL_Event &e, const Camera &camera) const
 {
-  SDL_Point mousePos{e.button.x+camera.x,e.button.y+camera.y};
+  SDL_Point mousePos = camera.mapPointInside({e.button.x,e.button.y});
   if(isCollide(mousePos,frame) && shown){
     if(e.button.button == SDL_BUTTON_LEFT)
       leftClick();
@@ -166,12 +162,10 @@ void Button::mouseMove(const SDL_Event &e)
     updateHover({e.motion.x,e.motion.y});
 }
 
-void Button::mouseMove(const SDL_Event &e, SDL_Rect camera)
+void Button::mouseMove(const SDL_Event &e, const Camera &camera)
 {
   if(backgroundColorIsSet && hoverIsSet){
-    SDL_Point mousePos;
-    mousePos.x = e.motion.x + camera.x;
-    mousePos.y = e.motion.y + camera.y;
+    SDL_Point mousePos = camera.mapPointInside({e.motion.x,e.motion.y});
     updateHover(mousePos);
   }
 }
