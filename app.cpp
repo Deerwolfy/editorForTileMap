@@ -1,12 +1,9 @@
 #include"app.h"
 #include<SDL_image.h>
 #include<SDL_ttf.h>
-#include<stdexcept>
 #include"timer.h"
 #include"font.h"
 #include"texture.h"
-#include"tile.h"
-#include"selectionBox.h"
 #include"textField.h"
 #include"spriteLoadCallback.h"
 #include"changeTileIdCallback.h"
@@ -14,23 +11,28 @@
 #include"popupInputBox.h"
 #include"fileSystemExplorer.h"
 #include"camera.h"
+#include"errorHandler.h"
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
   std::function<void(const GuiElement&)> quitCallback;
 };
 
+struct KeyFlags {
+  bool shift = false;
+};
+
 void App::init() const
 {
   if(SDL_Init(SDL_INIT_VIDEO) < 0){
-    throwError("Unable to init sdl subsystem SDL_Error: ", SDL_GetError());
+    ErrorHandler::raise("Unable to init sdl subsystem SDL_Error: ", SDL_GetError());
   }
   int flags = IMG_INIT_PNG | IMG_INIT_JPG;
   if(!(IMG_Init(flags) & flags)){
-    throwError("Unable to init SDL_image SDL_Error: ", IMG_GetError());
+    ErrorHandler::raise("Unable to init SDL_image SDL_Error: ", IMG_GetError());
   }
   if(TTF_Init() == -1){
-    throwError("Unable to init SDL_ttf SDL_Error: ", TTF_GetError());
+    ErrorHandler::raise("Unable to init SDL_ttf SDL_Error: ", TTF_GetError());
   }
 }
 
@@ -39,11 +41,6 @@ void App::quit() const
   TTF_Quit();
   IMG_Quit();
   SDL_Quit();
-}
-
-void App::throwError(std::string msg, const char *sdlMsg) const
-{
-  throw std::runtime_error(msg.append(sdlMsg)); 
 }
 
 void App::defineViews(std::shared_ptr<WindowWrapper> w, SDL_Rect &menu, SDL_Rect &editor) const
@@ -64,7 +61,7 @@ void App::generateButtons(ListMenu &buttons, const Callbacks &callbacks, const A
   buttons.setTitle(buttonFont,"Editor");
   buttons.setBackgroundColor(colors.buttonBackground);
   buttons.setHoverColor(colors.buttonHover);
-  buttons.addEntry(buttonFont,"Sprite Folder",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Load Sprites",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Save level",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Load level",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Editor background",callbacks.spriteLoad);
@@ -122,17 +119,22 @@ void App::run()
   std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
   std::shared_ptr<PopupInputBox> popup;
   bool popupClose = false;
+  KeyFlags keys;
   int tileSize = 32;
+  int canvasWidth = 10000;
+  int canvasHeight = 5000;
   mainWindow->show();
-  SDL_Event e;
   int currentTile = 1;
-  Timer capTimer;
   SDL_Rect menuView;
   SDL_Rect editorView;
   defineViews(mainWindow,menuView,editorView);
   SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
+  int menuButtonsHeight = 0;
   Camera tileMenuCamera(0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset);
   tileMenuCamera.setYScrollSpeed(TileMenuScrollSpeed);
+  Camera editorCamera(0,0,editorView.w,editorView.h);
+  editorCamera.setYScrollSpeed(EditorScrollSpeed);
+  editorCamera.setXScrollSpeed(EditorScrollSpeed);
   std::map<int,TextureName> idToTextureName;
   std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
@@ -141,12 +143,13 @@ void App::run()
   SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
   bool tilesLoad = false;
-  int menuButtonsHeight = 0;
   bool quit = false;
   generateButtons(buttonList,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
     [&quit](const GuiElement&){ quit = true; }
   }, colors);
+  Timer capTimer;
+  SDL_Event e;
   while(!quit){
     capTimer.start();
     while(SDL_PollEvent(&e) != 0){
@@ -160,12 +163,12 @@ void App::run()
               for(auto &b : menuButtons)
                 b.click(e,tileMenuCamera);
               if(e.button.button == SDL_BUTTON_LEFT){
-                if(isCollide({e.button.x,e.button.y},editorView)){
+                if(Collision::between({e.button.x,e.button.y},editorView)){
                   leftMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
                 }
               }
               else if(e.button.button == SDL_BUTTON_RIGHT){
-                if(isCollide({e.button.x,e.button.y},editorView)){
+                if(Collision::between({e.button.x,e.button.y},editorView)){
                   rightMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
                 }
               }
@@ -177,30 +180,30 @@ void App::run()
           }
           else if(!buttonList.isOpen()){
             if(e.button.button == SDL_BUTTON_LEFT){
-              if(isCollide({e.button.x,e.button.y},editorView) && tilesLoad){
-                SDL_Point origin = leftMouseBox.getOrigin();
-                int xOffset = origin.x%tileSize;
-                int yOffset = origin.y%tileSize;
-                int startX = origin.x - xOffset;
-                int countX = (leftMouseBox.getWidth()+xOffset)/tileSize + 1;
-                int w = leftMouseBox.getWidth();
-                int currentY = origin.y - yOffset;
-                int countY = (leftMouseBox.getHeight()+yOffset)/tileSize + 1;
-                while(countY--){
-                  int currentX = startX;
-                  int count = countX;
-                  while(count--){
-                    if(isCollide({currentX,currentY},tiles) == tiles.size())
-                      tiles.emplace_back(idToTextureName[currentTile].texture,currentX,currentY);
-                    currentX += tileSize;
+              if(Collision::between({e.button.x,e.button.y},editorView) && tilesLoad){
+                  SDL_Point origin = leftMouseBox.getOrigin(editorCamera);
+                  int xOffset = origin.x%tileSize;
+                  int yOffset = origin.y%tileSize;
+                  int startX = origin.x - xOffset;
+                  int countX = (leftMouseBox.getWidth()+xOffset)/tileSize + 1;
+                  int w = leftMouseBox.getWidth();
+                  int currentY = origin.y - yOffset;
+                  int countY = (leftMouseBox.getHeight()+yOffset)/tileSize + 1;
+                  while(countY--){
+                    int currentX = startX;
+                    int count = countX;
+                    while(count--){
+                      if(Collision::between({currentX,currentY},tiles) == tiles.size())
+                        tiles.emplace_back(idToTextureName[currentTile].texture,currentX,currentY);
+                      currentX += tileSize;
+                    }
+                    currentY += tileSize;
                   }
-                  currentY += tileSize;
-                }
               }
             }
             else if(e.button.button == SDL_BUTTON_RIGHT){
-              if(isCollide({e.button.x,e.button.y},editorView)){
-                SDL_Point origin = rightMouseBox.getOrigin();
+              if(Collision::between({e.button.x,e.button.y},editorView)){
+                SDL_Point origin = rightMouseBox.getOrigin(editorCamera);
                 int xOffset = origin.x%tileSize;
                 int yOffset = origin.y%tileSize;
                 int startX = origin.x - xOffset;
@@ -212,7 +215,7 @@ void App::run()
                   int currentX = startX;
                   int count = countX;
                   while(count--){
-                    std::size_t index = isCollide({currentX,currentY},tiles);
+                    std::size_t index = Collision::between({currentX,currentY},tiles);
                     if(index != tiles.size())
                       tiles.erase(std::begin(tiles) + index);
                     currentX += tileSize;
@@ -246,12 +249,12 @@ void App::run()
             int currentMouseX, currentMouseY;
             SDL_GetMouseState(&currentMouseX,&currentMouseY);
             if(e.wheel.y > 0){
-              if(isCollide({currentMouseX, currentMouseY}, menuView)){
+              if(Collision::between({currentMouseX, currentMouseY}, menuView)){
                 tileMenuCamera.scrollUp();
               }
             }
             else if(e.wheel.y < 0){
-              if(isCollide({currentMouseX, currentMouseY}, menuView)){
+              if(Collision::between({currentMouseX, currentMouseY}, menuView)){
                 tileMenuCamera.scrollDown();
               }
             }
@@ -270,6 +273,16 @@ void App::run()
             case SDLK_RETURN:
               if(popup)
                 popup->confirm();
+            break;
+            case SDLK_LSHIFT: case SDLK_RSHIFT:
+              keys.shift = true;
+            break;
+          }
+        break;
+        case SDL_KEYUP:
+          switch(e.key.keysym.sym){
+            case SDLK_LSHIFT: case SDLK_RSHIFT:
+              keys.shift = false;
             break;
           }
         break;
@@ -299,7 +312,7 @@ void App::run()
           popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
         }, colors
       );
-      tileMenuCamera.setYScrollCap(menuButtonsHeight);
+      tileMenuCamera.setYScrollCap(0,menuButtonsHeight);
       regenerateMenu = false;
       tilesLoad = true;
     }
@@ -315,7 +328,7 @@ void App::run()
     mainWindow->setClip();
     mainWindow->setViewport(&editorView);
     for(auto &tile : tiles)
-      tile.render(mainWindow->getRenderer());
+      tile.render(mainWindow->getRenderer(),editorCamera);
     if(leftMouseBox.isHold())
       leftMouseBox.render();
     if(rightMouseBox.isHold())

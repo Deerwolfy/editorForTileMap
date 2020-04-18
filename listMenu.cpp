@@ -111,7 +111,7 @@ void ListMenu::click(const SDL_Event &e)
   if(mainButton.click(e))
     return;
   if(open){
-    if(isCollide({e.button.x,e.button.y},frame)){
+    if(Collision::between({e.button.x,e.button.y},frame)){
         for(auto &b : menuButtons)
           if(b.click(e)){
             open = false;

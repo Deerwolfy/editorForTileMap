@@ -6,7 +6,10 @@
 #include<vector>
 #include<cstddef>
 
-bool isCollide(const SDL_Point&, const SDL_Rect&);
-std::size_t isCollide(const SDL_Point&, const std::vector<Tile>&);
+class Collision{
+public:
+  static bool between(const SDL_Point&, const SDL_Rect&);
+  static std::size_t between(const SDL_Point&, const std::vector<Tile>&);
+};
 
 #endif

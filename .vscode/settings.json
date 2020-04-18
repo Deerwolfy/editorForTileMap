@@ -72,6 +72,7 @@
         "fstream": "cpp",
         "sstream": "cpp",
         "cinttypes": "cpp",
-        "queue": "cpp"
+        "queue": "cpp",
+        "codecvt": "cpp"
     }
 }

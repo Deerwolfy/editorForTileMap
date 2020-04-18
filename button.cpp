@@ -133,7 +133,7 @@ void Button::render(const Camera &camera) const
 
 int Button::click(const SDL_Event &e) const
 {
-  if(isCollide({e.button.x,e.button.y},frame) && shown){
+  if(Collision::between({e.button.x,e.button.y},frame) && shown){
     if(e.button.button == SDL_BUTTON_LEFT)
       leftClick();
     else if(e.button.button == SDL_BUTTON_RIGHT)
@@ -146,7 +146,7 @@ int Button::click(const SDL_Event &e) const
 int Button::click(const SDL_Event &e, const Camera &camera) const
 {
   SDL_Point mousePos = camera.mapPointInside({e.button.x,e.button.y});
-  if(isCollide(mousePos,frame) && shown){
+  if(Collision::between(mousePos,frame) && shown){
     if(e.button.button == SDL_BUTTON_LEFT)
       leftClick();
     else if(e.button.button == SDL_BUTTON_RIGHT)
@@ -172,7 +172,7 @@ void Button::mouseMove(const SDL_Event &e, const Camera &camera)
 
 void Button::updateHover(const SDL_Point &mousePos)
 {
-  if(isCollide(mousePos,frame)){
+  if(Collision::between(mousePos,frame)){
       activeBackground = hoverColor;
       hover = true;
     }

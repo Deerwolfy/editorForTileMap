@@ -1,4 +1,5 @@
 #include"changeTileIdCallback.h"
+#include"errorHandler.h"
 #include<iostream>
 #include<sstream>
 
@@ -9,14 +10,12 @@ void ChangeTileIdCallback::operator()(const PopupInputBox &b)
   int oldId = b.getElementId();
   userInput >> newId;
   if(userInput.fail()){
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Error","Id must be a number!",nullptr);
+    ErrorHandler::errorMessageBox("Id must be a number!");
     return;
   }
   auto newIdTexture = idToTextureName.find(newId);
   if(newIdTexture != std::end(idToTextureName)){
-    std::string message("Id is already mapped to ");
-    message += newIdTexture->second.name;
-    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,"Error",message.c_str(),nullptr);
+    ErrorHandler::errorMessageBox(std::string("Id is already mapped to ")+newIdTexture->second.name);
     return;
   }
   std::map<int,TextureName> newMap;

@@ -12,12 +12,12 @@ bool Camera::isVisible(const SDL_Rect &frame) const
 void Camera::incX(int inc)
 {
   camera.x += inc;
-  if(camera.x < 0 || xCapIsSet && camera.x+camera.w > xCap)
+  if(xCapIsSet && (camera.x < xLowerCap || camera.x+camera.w > xUpperCap))
     camera.x -= inc;
 }
 void Camera::incY(int inc)
 {
   camera.y += inc;
-  if(camera.y < 0 || yCapIsSet && camera.y+camera.y > yCap)
+  if(yCapIsSet && (camera.y < yLowerCap || camera.y+camera.h > yUpperCap))
     camera.y -= inc;
 }

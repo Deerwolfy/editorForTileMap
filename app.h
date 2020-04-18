@@ -13,6 +13,8 @@
 #include"appColors.h"
 #include<functional>
 #include<memory>
+#include"selectionBox.h"
+#include"tile.h"
 
 struct Callbacks;
 
@@ -28,10 +30,10 @@ private:
   void generateButtons(ListMenu&,const Callbacks&, const AppColors&) const;
   void drawMenuBackground(std::shared_ptr<WindowWrapper>, const SDL_Rect&, const AppColors&) const;
   int generateMenu(std::map<int,TextureName>&,std::shared_ptr<WindowWrapper>,
-                    std::vector<Button>&,const SDL_Rect&,std::function<void(const GuiElement&)>,std::function<void(const GuiElement&)>, const AppColors&) const;
-  void throwError(std::string,const char*) const;
+    std::vector<Button>&,const SDL_Rect&,std::function<void(const GuiElement&)>,std::function<void(const GuiElement&)>, const AppColors&) const;
   const double TicksPerFrame = 1000.0/60.0;
   const int TileMenuScrollSpeed = 30;
+  const int EditorScrollSpeed = 50;
   const int TileMenuItemsMargin = 5;
   const int TileMenuYOffset = 40;
   const int TilemenuXOffset = 20;

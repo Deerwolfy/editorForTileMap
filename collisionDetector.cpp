@@ -1,6 +1,6 @@
 #include"collisionDetector.h"
 
-bool isCollide(const SDL_Point &point, const SDL_Rect &rect)
+bool Collision::between(const SDL_Point &point, const SDL_Rect &rect)
 {
   if(point.x < rect.x || point.x >= rect.x+rect.w)
     return false;
@@ -9,10 +9,10 @@ bool isCollide(const SDL_Point &point, const SDL_Rect &rect)
   return true;
 }
 
-std::size_t isCollide(const SDL_Point &point, const std::vector<Tile> &collection)
+std::size_t Collision::between(const SDL_Point &point, const std::vector<Tile> &collection)
 {
   for(std::size_t i = 0; i != collection.size(); ++i)
-    if(isCollide(point,collection[i].getBoundBox()))
+    if(between(point,collection[i].getBoundBox()))
       return i;
   return collection.size();
 }

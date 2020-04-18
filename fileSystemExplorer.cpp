@@ -3,6 +3,7 @@
 
 std::wstring FileSystemExplorer::chooseFileOpen(const std::wstring &title, std::shared_ptr<FILEOPENDIALOGOPTIONS> options)
 {
+  std::wstring path;
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
   if(SUCCEEDED(hr)){
     IFileOpenDialog *commonDialog;
@@ -27,7 +28,7 @@ std::wstring FileSystemExplorer::chooseFileOpen(const std::wstring &title, std::
           PWSTR filePath;
           hr = selectedItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
           if(SUCCEEDED(hr)){
-            return filePath;
+            path =  filePath;
             CoTaskMemFree(filePath);
           }
           selectedItem->Release();
@@ -37,11 +38,12 @@ std::wstring FileSystemExplorer::chooseFileOpen(const std::wstring &title, std::
     }
     CoUninitialize();
   }
-  return L"";
+  return path;
 }
 
 std::wstring FileSystemExplorer::chooseFileSave(const std::wstring &title, std::shared_ptr<FILEOPENDIALOGOPTIONS> options)
 {
+  std::wstring path;
   HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
   if(SUCCEEDED(hr)){
     IFileSaveDialog *commonDialog;
@@ -66,7 +68,7 @@ std::wstring FileSystemExplorer::chooseFileSave(const std::wstring &title, std::
           PWSTR filePath;
           hr = selectedItem->GetDisplayName(SIGDN_FILESYSPATH, &filePath);
           if(SUCCEEDED(hr)){
-            return filePath;
+            path = filePath;
             CoTaskMemFree(filePath);
           }
           selectedItem->Release();
@@ -76,7 +78,7 @@ std::wstring FileSystemExplorer::chooseFileSave(const std::wstring &title, std::
     }
     CoUninitialize();
   }
-  return L"";
+  return path;
 }
 
 std::wstring FileSystemExplorer::openFile(const std::wstring &title)
