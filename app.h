@@ -33,7 +33,6 @@ private:
     std::vector<Button>&,const SDL_Rect&,std::function<void(const GuiElement&)>,std::function<void(const GuiElement&)>, const AppColors&) const;
   const double TicksPerFrame = 1000.0/60.0;
   const int TileMenuScrollSpeed = 30;
-  const int EditorScrollSpeed = 50;
   const int TileMenuItemsMargin = 5;
   const int TileMenuYOffset = 40;
   const int TilemenuXOffset = 20;

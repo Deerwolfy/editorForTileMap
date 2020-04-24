@@ -9,15 +9,13 @@ bool Camera::isVisible(const SDL_Rect &frame) const
   return true;
 }
 
-void Camera::incX(int inc)
+void Camera::moveBy(int xInc, int yInc)
 {
-  camera.x += inc;
-  if(xCapIsSet && (camera.x < xLowerCap || camera.x+camera.w > xUpperCap))
-    camera.x -= inc;
-}
-void Camera::incY(int inc)
-{
-  camera.y += inc;
-  if(yCapIsSet && (camera.y < yLowerCap || camera.y+camera.h > yUpperCap))
-    camera.y -= inc;
+  camera.x += xInc;
+  if(xBoundIsSet && (camera.x < xLowerBound || camera.x+camera.w > xUpperBound))
+    camera.x -= xInc;
+
+  camera.y += yInc;
+  if(yBoundIsSet && (camera.y < yLowerBound || camera.y+camera.h > yUpperBound))
+    camera.y -= yInc;
 }

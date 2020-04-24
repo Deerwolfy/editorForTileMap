@@ -20,6 +20,7 @@ struct Callbacks {
 
 struct KeyFlags {
   bool shift = false;
+  bool leftMouse = false;
 };
 
 void App::init() const
@@ -120,6 +121,7 @@ void App::run()
   std::shared_ptr<PopupInputBox> popup;
   bool popupClose = false;
   KeyFlags keys;
+  SDL_Point cameraMoveLastPos;
   int tileSize = 32;
   int canvasWidth = 10000;
   int canvasHeight = 5000;
@@ -131,10 +133,8 @@ void App::run()
   SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
   int menuButtonsHeight = 0;
   Camera tileMenuCamera(0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset);
-  tileMenuCamera.setYScrollSpeed(TileMenuScrollSpeed);
+  tileMenuCamera.setYMovementSpeed(TileMenuScrollSpeed);
   Camera editorCamera(0,0,editorView.w,editorView.h);
-  editorCamera.setYScrollSpeed(EditorScrollSpeed);
-  editorCamera.setXScrollSpeed(EditorScrollSpeed);
   std::map<int,TextureName> idToTextureName;
   std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
@@ -163,12 +163,13 @@ void App::run()
               for(auto &b : menuButtons)
                 b.click(e,tileMenuCamera);
               if(e.button.button == SDL_BUTTON_LEFT){
-                if(Collision::between({e.button.x,e.button.y},editorView)){
+                if(Collision::between({e.button.x,e.button.y},editorView) && !keys.shift){
                   leftMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
                 }
+                keys.leftMouse = true;
               }
               else if(e.button.button == SDL_BUTTON_RIGHT){
-                if(Collision::between({e.button.x,e.button.y},editorView)){
+                if(Collision::between({e.button.x,e.button.y},editorView) && !keys.shift){
                   rightMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
                 }
               }
@@ -180,7 +181,7 @@ void App::run()
           }
           else if(!buttonList.isOpen()){
             if(e.button.button == SDL_BUTTON_LEFT){
-              if(Collision::between({e.button.x,e.button.y},editorView) && tilesLoad){
+              if(Collision::between({e.button.x,e.button.y},editorView) && tilesLoad && !keys.shift){
                   SDL_Point origin = leftMouseBox.getOrigin(editorCamera);
                   int xOffset = origin.x%tileSize;
                   int yOffset = origin.y%tileSize;
@@ -200,9 +201,10 @@ void App::run()
                     currentY += tileSize;
                   }
               }
+              keys.leftMouse = false;
             }
             else if(e.button.button == SDL_BUTTON_RIGHT){
-              if(Collision::between({e.button.x,e.button.y},editorView)){
+              if(Collision::between({e.button.x,e.button.y},editorView) && !keys.shift){
                 SDL_Point origin = rightMouseBox.getOrigin(editorCamera);
                 int xOffset = origin.x%tileSize;
                 int yOffset = origin.y%tileSize;
@@ -236,11 +238,18 @@ void App::run()
           else if(!buttonList.isOpen()){
             for(auto &b : menuButtons)
               b.mouseMove(e,tileMenuCamera);
-            if(leftMouseBox.isHold()){
-              leftMouseBox.setEnd(e.motion.x - editorView.x,e.motion.y - editorView.y);
-            }
-            else if(rightMouseBox.isHold()){
-              rightMouseBox.setEnd(e.motion.x - editorView.x,e.motion.y - editorView.y);
+            if(keys.shift){
+              if(keys.leftMouse)
+                editorCamera.moveBy(cameraMoveLastPos.x-e.motion.x,cameraMoveLastPos.y-e.motion.y);
+              cameraMoveLastPos.x = e.motion.x;
+              cameraMoveLastPos.y = e.motion.y;
+            } else {
+              if(leftMouseBox.isHold()){
+                leftMouseBox.setEnd(e.motion.x - editorView.x,e.motion.y - editorView.y);
+              }
+              else if(rightMouseBox.isHold()){
+                rightMouseBox.setEnd(e.motion.x - editorView.x,e.motion.y - editorView.y);
+              }
             }
           }
         break;
@@ -250,12 +259,12 @@ void App::run()
             SDL_GetMouseState(&currentMouseX,&currentMouseY);
             if(e.wheel.y > 0){
               if(Collision::between({currentMouseX, currentMouseY}, menuView)){
-                tileMenuCamera.scrollUp();
+                tileMenuCamera.moveUp();
               }
             }
             else if(e.wheel.y < 0){
               if(Collision::between({currentMouseX, currentMouseY}, menuView)){
-                tileMenuCamera.scrollDown();
+                tileMenuCamera.moveDown();
               }
             }
           }
@@ -276,6 +285,12 @@ void App::run()
             break;
             case SDLK_LSHIFT: case SDLK_RSHIFT:
               keys.shift = true;
+              int currentMouseX, currentMouseY;
+              SDL_GetMouseState(&currentMouseX,&currentMouseY);
+              if(Collision::between({currentMouseX, currentMouseY}, editorView)){
+                cameraMoveLastPos.x = currentMouseX;
+                cameraMoveLastPos.y = currentMouseY;
+              }
             break;
           }
         break;
@@ -312,7 +327,7 @@ void App::run()
           popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
         }, colors
       );
-      tileMenuCamera.setYScrollCap(0,menuButtonsHeight);
+      tileMenuCamera.setYBound(0,menuButtonsHeight+TileMenuScrollSpeed);
       regenerateMenu = false;
       tilesLoad = true;
     }

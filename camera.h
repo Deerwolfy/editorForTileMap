@@ -20,28 +20,26 @@ public:
   SDL_Point mapPointInside(const SDL_Point &point) const
     { return {point.x+camera.x,point.y+camera.y}; };
   bool isVisible(const SDL_Rect&) const;
-  void incX(int inc);
-  void incY(int inc);
-  void setX(int x) { camera.x = x; }
-  void setY(int y) { camera.y = y; }
-  void setXScrollCap(int lowerCap, int upperCap) { xLowerCap = lowerCap; xUpperCap = upperCap; xCapIsSet = true; }
-  void setYScrollCap(int lowerCap, int upperCap) { yLowerCap = lowerCap; yUpperCap = upperCap; yCapIsSet = true; }
-  void setYScrollSpeed(int speed) { yScrollSpeed = speed; }
-  void setXScrollSpeed(int speed) { xScrollSpeed = speed; }
-  void scrollUp() { incY(-yScrollSpeed); }
-  void scrollDown() { incY(yScrollSpeed); }
-  void scrollLeft() { incX(-xScrollSpeed); }
-  void scrollRight() { incX(xScrollSpeed); }
+  void moveBy(int xInc, int yInc);
+  void moveTo(int x, int y) { camera.x = x; camera.y = y;}
+  void setXBound(int lower, int upper) { xLowerBound = lower; xUpperBound = upper; xBoundIsSet = true; }
+  void setYBound(int lower, int upper) { yLowerBound = lower; yUpperBound = upper; yBoundIsSet = true; }
+  void setYMovementSpeed(int speed) { yMovementSpeed = speed; }
+  void setXMovementSpeed(int speed) { xMovementSpeed = speed; }
+  void moveUp() { moveBy(0,-yMovementSpeed); }
+  void moveDown() { moveBy(0,yMovementSpeed); }
+  void moveLeft() { moveBy(-xMovementSpeed,0); }
+  void moveRight() { moveBy(xMovementSpeed,0); }
 private:
   SDL_Rect camera;
-  int xLowerCap;
-  int xUpperCap;
-  bool xCapIsSet = false;
-  int yLowerCap;
-  int yUpperCap;
-  bool yCapIsSet = false;
-  int yScrollSpeed = 0;
-  int xScrollSpeed = 0;
+  int xLowerBound;
+  int xUpperBound;
+  bool xBoundIsSet = false;
+  int yLowerBound;
+  int yUpperBound;
+  bool yBoundIsSet = false;
+  int yMovementSpeed = 0;
+  int xMovementSpeed = 0;
 };
 
 #endif
