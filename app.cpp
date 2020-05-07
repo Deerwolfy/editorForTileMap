@@ -12,6 +12,7 @@
 #include"fileSystemExplorer.h"
 #include"camera.h"
 #include"errorHandler.h"
+#include"buttonMenu.h"
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -72,48 +73,6 @@ void App::generateButtons(ListMenu &buttons, const Callbacks &callbacks, const A
   buttons.addEntry(buttonFont,"Quit",callbacks.quitCallback);
 }
 
-void App::drawMenuBackground(std::shared_ptr<WindowWrapper> w, const SDL_Rect &menu, const AppColors &colors) const
-{
-  SDL_Color prev = w->getColor();
-  w->setColor(colors.menuBackground);
-  w->fillRect(menu);
-  w->setColor(colors.menuBorder);
-  w->drawRect(menu);
-  w->setColor(prev);
-}
-
-int App::generateMenu(std::map<int,TextureName> &textureNames, std::shared_ptr<WindowWrapper> w,
-                       std::vector<Button> &buttons, const SDL_Rect &parent, std::function<void(const GuiElement&)> leftCallback,
-                       std::function<void(const GuiElement&)> rightCallback, const AppColors &colors) const
-{
-  int offsetX = TilemenuXOffset;
-  int currentY = TileMenuYOffset;
-  int padding = 5;
-  int iconMaxSide = 32;
-  int iconSep = 5;
-  int buttonWidth = parent.w - offsetX - offsetX;
-  int maxTextWidth;
-  Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
-  buttons.clear();
-  for(const auto &t : textureNames){
-    buttons.emplace_back(w,offsetX,currentY,padding,padding);
-    Button &current = buttons.back();
-    auto iconDimensions = current.setIcon(t.second.texture,iconMaxSide,iconSep);
-    maxTextWidth = buttonWidth-padding-padding-iconDimensions.first-iconSep;
-    current.setTextAreaWidth(maxTextWidth);
-    current.setText(buttonFont,t.second.name);
-    currentY += current.getHeight() + TileMenuItemsMargin;
-    current.setBackgroundColor(colors.buttonBackground);
-    current.setHoverColor(colors.buttonHover);
-    current.setBorderColor(colors.buttonBorder);
-    current.setElementId(t.first);
-    current.setLeftClickCallback(leftCallback);
-    current.setRightClickCallback(rightCallback);
-    current.setRightPadding(buttonWidth - current.getWidth());
-  }
-  return currentY;
-}
-
 void App::run()
 {
   AppColors colors;
@@ -130,18 +89,32 @@ void App::run()
   SDL_Rect menuView;
   SDL_Rect editorView;
   defineViews(mainWindow,menuView,editorView);
-  SDL_Rect tileMenu = {TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2};
-  int menuButtonsHeight = 0;
-  Camera tileMenuCamera(0,0,menuView.w-TilemenuXOffset,menuView.h-TileMenuYOffset);
-  tileMenuCamera.setYMovementSpeed(TileMenuScrollSpeed);
+  ButtonMenu tileMenu(mainWindow, TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2);
+  tileMenu.setCameraScrollSpeed(TileMenuScrollSpeed);
   Camera editorCamera(0,0,editorView.w,editorView.h);
   std::map<int,TextureName> idToTextureName;
   std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
-  std::vector<Button> menuButtons;
   SelectionBox leftMouseBox(mainWindow,colors.leftSelection,colors.leftSelectionBorder);
   SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
+  tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); });
+  tileMenu.setButtonsRightCallback([&popup,&popupClose,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
+    popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
+    popup->setBackgroundColor(colors.popupBackground);
+    popup->setBorderColor(colors.popupBorder);
+    popup->setActionButtonLabel("Change");
+    popup->setTitle("Change tile id");
+    popup->setElementId(e.getElementId());
+    popup->setActionCallback([&regenerateMenu,&popup,&popupClose,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
+    {
+      ChangeTileIdCallback callback(mainWindow,idToTextureName,tiles);
+      callback(*popup.get());
+      popupClose = true;
+      regenerateMenu = true;
+      });
+      popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
+  });
   bool tilesLoad = false;
   bool quit = false;
   generateButtons(buttonList,{
@@ -160,8 +133,7 @@ void App::run()
         case SDL_MOUSEBUTTONDOWN:
             buttonList.click(e);
             if(!buttonList.isOpen() && !popup){
-              for(auto &b : menuButtons)
-                b.click(e,tileMenuCamera);
+              tileMenu.click(e);
               if(e.button.button == SDL_BUTTON_LEFT){
                 if(Collision::between({e.button.x,e.button.y},editorView) && !keys.shift){
                   leftMouseBox.setStart(e.button.x - editorView.x,e.button.y - editorView.y);
@@ -236,8 +208,7 @@ void App::run()
             popup->mouseMove(e);
           }
           else if(!buttonList.isOpen()){
-            for(auto &b : menuButtons)
-              b.mouseMove(e,tileMenuCamera);
+            tileMenu.mouseMove(e);
             if(keys.shift){
               if(keys.leftMouse)
                 editorCamera.moveBy(cameraMoveLastPos.x-e.motion.x,cameraMoveLastPos.y-e.motion.y);
@@ -255,18 +226,7 @@ void App::run()
         break;
         case SDL_MOUSEWHEEL:
           if(!buttonList.isOpen() && !popup){
-            int currentMouseX, currentMouseY;
-            SDL_GetMouseState(&currentMouseX,&currentMouseY);
-            if(e.wheel.y > 0){
-              if(Collision::between({currentMouseX, currentMouseY}, menuView)){
-                tileMenuCamera.moveUp();
-              }
-            }
-            else if(e.wheel.y < 0){
-              if(Collision::between({currentMouseX, currentMouseY}, menuView)){
-                tileMenuCamera.moveDown();
-              }
-            }
+            tileMenu.scroll(e);
           }
         break;
         case SDL_KEYDOWN:
@@ -308,26 +268,7 @@ void App::run()
       }
     }
     if(regenerateMenu){
-      menuButtonsHeight = generateMenu(idToTextureName,mainWindow,menuButtons,menuView,
-        [&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId();},
-        [&popup,&popupClose,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
-          popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
-          popup->setBackgroundColor(colors.popupBackground);
-          popup->setBorderColor(colors.popupBorder);
-          popup->setActionButtonLabel("Change");
-          popup->setTitle("Change tile id");
-          popup->setElementId(e.getElementId());
-          popup->setActionCallback([&regenerateMenu,&popup,&popupClose,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
-          {
-            ChangeTileIdCallback callback(mainWindow,idToTextureName,tiles);
-            callback(*popup.get());
-            popupClose = true;
-            regenerateMenu = true;
-          });
-          popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
-        }, colors
-      );
-      tileMenuCamera.setYBound(0,menuButtonsHeight+TileMenuScrollSpeed);
+      tileMenu.generate(idToTextureName,colors);
       regenerateMenu = false;
       tilesLoad = true;
     }
@@ -336,11 +277,13 @@ void App::run()
       popupClose = false;
     }
     mainWindow->clear();
-    drawMenuBackground(mainWindow,menuView,colors);
-    mainWindow->setClip(&tileMenu);
-    for(const auto &b : menuButtons)
-      b.render(tileMenuCamera);
-    mainWindow->setClip();
+    SDL_Color prev = mainWindow->getColor();
+    mainWindow->setColor(colors.menuBackground);
+    mainWindow->fillRect(menuView);
+    mainWindow->setColor(colors.menuBorder);
+    mainWindow->drawRect(menuView);
+    mainWindow->setColor(prev);
+    tileMenu.render();
     mainWindow->setViewport(&editorView);
     for(auto &tile : tiles)
       tile.render(mainWindow->getRenderer(),editorCamera);

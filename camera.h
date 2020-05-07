@@ -6,7 +6,7 @@
 class Camera {
 public:
   Camera(int x, int y, int w, int h):
-  camera({x,y,w,h}) { }
+  camera({x,0,w,h}), yOffset(y) { }
   int getRelativeX(int x) const { return x - camera.x; }
   int getRelativeY(int y) const { return y - camera.y; }
   int mapX(int x) const { return x + camera.x; }
@@ -34,6 +34,7 @@ private:
   SDL_Rect camera;
   int xLowerBound;
   int xUpperBound;
+  int yOffset;
   bool xBoundIsSet = false;
   int yLowerBound;
   int yUpperBound;
