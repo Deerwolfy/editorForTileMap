@@ -26,7 +26,10 @@ public:
   void render() const override;
   void confirm() const { actionButton.leftClick(); }
   void close() const { closeButton.leftClick(); }
+  void markDone() { done = true; }
+  bool isDone() const { return done; }
 private:
+  bool done = false;
   TextField inputField;
   Button closeButton;
   Button actionButton;

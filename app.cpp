@@ -78,7 +78,6 @@ void App::run()
   AppColors colors;
   std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
   std::shared_ptr<PopupInputBox> popup;
-  bool popupClose = false;
   KeyFlags keys;
   SDL_Point cameraMoveLastPos;
   int tileSize = 32;
@@ -99,21 +98,21 @@ void App::run()
   SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
   tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); });
-  tileMenu.setButtonsRightCallback([&popup,&popupClose,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
+  tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
     popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
     popup->setBackgroundColor(colors.popupBackground);
     popup->setBorderColor(colors.popupBorder);
     popup->setActionButtonLabel("Change");
     popup->setTitle("Change tile id");
     popup->setElementId(e.getElementId());
-    popup->setActionCallback([&regenerateMenu,&popup,&popupClose,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
+    popup->setActionCallback([&regenerateMenu,&popup,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
     {
       ChangeTileIdCallback callback(mainWindow,idToTextureName,tiles);
       callback(*popup.get());
-      popupClose = true;
+      popup->markDone();
       regenerateMenu = true;
       });
-      popup->setCloseCallback([&popupClose](const GuiElement&){popupClose = true;});
+      popup->setCloseCallback([&popup](const GuiElement&){popup->markDone();});
   });
   bool tilesLoad = false;
   bool quit = false;
@@ -237,7 +236,7 @@ void App::run()
             break;
             case SDLK_ESCAPE:
               if(popup)
-                popupClose = true;
+                popup->markDone();
             break;
             case SDLK_RETURN:
               if(popup)
@@ -272,9 +271,8 @@ void App::run()
       regenerateMenu = false;
       tilesLoad = true;
     }
-    if(popupClose){
+    if(popup && popup->isDone()){
       popup.reset();
-      popupClose = false;
     }
     mainWindow->clear();
     SDL_Color prev = mainWindow->getColor();
