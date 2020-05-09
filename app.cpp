@@ -13,6 +13,7 @@
 #include"camera.h"
 #include"errorHandler.h"
 #include"buttonMenu.h"
+#include"tileCanvas.h"
 
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
@@ -81,8 +82,8 @@ void App::run()
   KeyFlags keys;
   SDL_Point cameraMoveLastPos;
   int tileSize = 32;
-  int canvasWidth = 10000;
-  int canvasHeight = 5000;
+  TileCanvas canvas(mainWindow,0,0,3000,500,tileSize);
+  canvas.setBackgroundColor({0xFF,0xFF,0xFF,0xFF});
   mainWindow->show();
   int currentTile = 1;
   SDL_Rect menuView;
@@ -92,22 +93,21 @@ void App::run()
   tileMenu.setCameraScrollSpeed(TileMenuScrollSpeed);
   Camera editorCamera(0,0,editorView.w,editorView.h);
   std::map<int,TextureName> idToTextureName;
-  std::vector<Tile> tiles;
   ListMenu buttonList(mainWindow,5,5,3,5);
   SelectionBox leftMouseBox(mainWindow,colors.leftSelection,colors.leftSelectionBorder);
   SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
   tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); });
-  tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&tiles,&regenerateMenu](const GuiElement &e)->void{
+  tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&canvas,&regenerateMenu](const GuiElement &e)->void{
     popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
     popup->setBackgroundColor(colors.popupBackground);
     popup->setBorderColor(colors.popupBorder);
-    popup->setActionButtonLabel("Change");
-    popup->setTitle("Change tile id");
+    popup->setActionButtonLabel("Set");
+    popup->setTitle("Set tile id");
     popup->setElementId(e.getElementId());
-    popup->setActionCallback([&regenerateMenu,&popup,&mainWindow,&idToTextureName,&tiles] (const GuiElement&)->void
+    popup->setActionCallback([&regenerateMenu,&popup,&mainWindow,&idToTextureName,&canvas] (const GuiElement&)->void
     {
-      ChangeTileIdCallback callback(mainWindow,idToTextureName,tiles);
+      ChangeTileIdCallback callback(mainWindow,idToTextureName,canvas);
       callback(*popup.get());
       popup->markDone();
       regenerateMenu = true;
@@ -153,48 +153,13 @@ void App::run()
           else if(!buttonList.isOpen()){
             if(e.button.button == SDL_BUTTON_LEFT){
               if(Collision::between({e.button.x,e.button.y},editorView) && tilesLoad && !keys.shift){
-                  SDL_Point origin = leftMouseBox.getOrigin(editorCamera);
-                  int xOffset = origin.x%tileSize;
-                  int yOffset = origin.y%tileSize;
-                  int startX = origin.x - xOffset;
-                  int countX = (leftMouseBox.getWidth()+xOffset)/tileSize + 1;
-                  int w = leftMouseBox.getWidth();
-                  int currentY = origin.y - yOffset;
-                  int countY = (leftMouseBox.getHeight()+yOffset)/tileSize + 1;
-                  while(countY--){
-                    int currentX = startX;
-                    int count = countX;
-                    while(count--){
-                      if(Collision::between({currentX,currentY},tiles) == tiles.size())
-                        tiles.emplace_back(idToTextureName[currentTile].texture,currentX,currentY);
-                      currentX += tileSize;
-                    }
-                    currentY += tileSize;
-                  }
+                  canvas.placeTiles(leftMouseBox,editorCamera,idToTextureName[currentTile].texture,currentTile);
               }
               keys.leftMouse = false;
             }
             else if(e.button.button == SDL_BUTTON_RIGHT){
               if(Collision::between({e.button.x,e.button.y},editorView) && !keys.shift){
-                SDL_Point origin = rightMouseBox.getOrigin(editorCamera);
-                int xOffset = origin.x%tileSize;
-                int yOffset = origin.y%tileSize;
-                int startX = origin.x - xOffset;
-                int countX = (rightMouseBox.getWidth()+xOffset)/tileSize + 1;
-                int w = rightMouseBox.getWidth();
-                int currentY = origin.y - yOffset;
-                int countY = (rightMouseBox.getHeight()+yOffset)/tileSize + 1;
-                while(countY--){
-                  int currentX = startX;
-                  int count = countX;
-                  while(count--){
-                    std::size_t index = Collision::between({currentX,currentY},tiles);
-                    if(index != tiles.size())
-                      tiles.erase(std::begin(tiles) + index);
-                    currentX += tileSize;
-                  }
-                  currentY += tileSize;
-                }
+                canvas.removeTiles(rightMouseBox,editorCamera);
               }
             }
           }
@@ -280,11 +245,12 @@ void App::run()
     mainWindow->fillRect(menuView);
     mainWindow->setColor(colors.menuBorder);
     mainWindow->drawRect(menuView);
+    mainWindow->setColor({0xAA,0xAA,0xAA,0xFF});
+    mainWindow->fillRect(editorView);
     mainWindow->setColor(prev);
     tileMenu.render();
     mainWindow->setViewport(&editorView);
-    for(auto &tile : tiles)
-      tile.render(mainWindow->getRenderer(),editorCamera);
+    canvas.render(editorCamera);
     if(leftMouseBox.isHold())
       leftMouseBox.render();
     if(rightMouseBox.isHold())

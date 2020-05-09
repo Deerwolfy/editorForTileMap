@@ -18,12 +18,8 @@ void ChangeTileIdCallback::operator()(const PopupInputBox &b)
     ErrorHandler::errorMessageBox(std::string("Id is already mapped to ")+newIdTexture->second.name);
     return;
   }
-  std::map<int,TextureName> newMap;
-  for(const auto &entry : idToTextureName){
-    if(entry.first == oldId)
-      newMap.insert({newId,entry.second});
-    else
-      newMap.insert({entry.first,entry.second});
-  }
-  idToTextureName = std::move(newMap);
+  canvas.updateTileId(oldId, newId);
+  TextureName oldTexture = idToTextureName.find(oldId)->second;
+  idToTextureName.erase(oldId);
+  idToTextureName.insert({newId,oldTexture});
 }

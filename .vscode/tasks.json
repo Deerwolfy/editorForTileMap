@@ -12,7 +12,7 @@
 				"TileMapEditor.exe",
 				"main.cpp", "app.cpp", "windowWrapper.cpp", "timer.cpp", "texture.cpp", "font.cpp", "button.cpp", "collisionDetector.cpp",
 				"spriteLoadCallback.cpp", "listMenu.cpp", "changeTileIdCallback.cpp", "selectionBox.cpp", "guiElement.cpp", "textField.cpp",
-				"popupInputBox.cpp",  "fileSystemExplorer.cpp", "camera.cpp", "errorHandler.cpp", "buttonMenu.cpp",
+				"popupInputBox.cpp",  "fileSystemExplorer.cpp", "camera.cpp", "errorHandler.cpp", "buttonMenu.cpp", "tileCanvas.cpp",
 				"/IC:\\vc_dev_lib\\include",
 				"/link",
 				"/LIBPATH:C:\\vc_dev_lib\\lib\\x86",

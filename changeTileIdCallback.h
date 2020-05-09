@@ -8,16 +8,17 @@
 #include"texture.h"
 #include"textureName.h"
 #include"popupInputBox.h"
+#include"tileCanvas.h"
 #include"tile.h"
 
 class ChangeTileIdCallback {
 public:
-  ChangeTileIdCallback(std::shared_ptr<WindowWrapper> window,std::map<int,TextureName> &idToTextureName, std::vector<Tile> &tiles):
-    window(window), idToTextureName(idToTextureName), tiles(tiles) { }
+  ChangeTileIdCallback(std::shared_ptr<WindowWrapper> window,std::map<int,TextureName> &idToTextureName, TileCanvas &canvas):
+    window(window), idToTextureName(idToTextureName), canvas(canvas) { }
   void operator()(const PopupInputBox&);
 private:
   std::shared_ptr<WindowWrapper> window;
-  std::vector<Tile> &tiles;
+  TileCanvas &canvas;
   std::map<int,TextureName> &idToTextureName;
 };
 
