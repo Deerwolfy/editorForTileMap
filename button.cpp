@@ -46,14 +46,14 @@ std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int i
   if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){
     if(iconTexture.getWidth() > iconTexture.getHeight()){
       double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
-      iconTexture.resize(parentWindow->getRenderer(),maxDimension,maxDimension*ratio);
+      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension,maxDimension*ratio);
     }
     else if(iconTexture.getWidth() < iconTexture.getHeight()){
       double ratio = iconTexture.getWidth()/static_cast<double>(iconTexture.getHeight());
-      iconTexture.resize(parentWindow->getRenderer(),maxDimension*ratio,maxDimension);
+      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension*ratio,maxDimension);
     }
     else{
-      iconTexture.resize(parentWindow->getRenderer(),maxDimension,maxDimension);
+      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension,maxDimension);
     }
   }
   icon = iconTexture;

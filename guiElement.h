@@ -30,7 +30,9 @@ public:
   void setRightClickCallback(std::function<void(const GuiElement&)> callback)
     { rightClickCallback = callback; }
   virtual void setBackgroundColor(const SDL_Color&);
+  virtual void clearBackgoundColor() { backgroundColorIsSet = false; }
   virtual void setBorderColor(const SDL_Color&);
+  virtual void clearBorderColor() { borderColorIsSet = false; }
   virtual void render() const = 0;
   void rightClick() const;
   void leftClick() const;

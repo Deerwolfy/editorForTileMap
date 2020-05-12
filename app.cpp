@@ -18,6 +18,7 @@
 struct Callbacks {
   SpriteLoadCallback spriteLoad;
   std::function<void(const GuiElement&)> quitCallback;
+  std::function<void(const GuiElement&)> setCanvasBackground;
 };
 
 struct KeyFlags {
@@ -67,28 +68,31 @@ void App::generateButtons(ListMenu &buttons, const Callbacks &callbacks, const A
   buttons.addEntry(buttonFont,"Load Sprites",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Save level",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Load level",callbacks.spriteLoad);
-  buttons.addEntry(buttonFont,"Editor background",callbacks.spriteLoad);
+  buttons.addEntry(buttonFont,"Canvas background",callbacks.setCanvasBackground);
   buttons.addEntry(buttonFont,"Save settings",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Load Settings",callbacks.spriteLoad);
-  buttons.addEntry(buttonFont,"View log",callbacks.spriteLoad);
   buttons.addEntry(buttonFont,"Quit",callbacks.quitCallback);
 }
 
 void App::run()
 {
+  const int winWidth = 1366;
+  const int winHeight = 768;
+  const int canvasWidth = 512;
+  const int canvasHeight = 512;
   AppColors colors;
-  std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(1366,768);
+  std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(winWidth,winHeight);
   std::shared_ptr<PopupInputBox> popup;
   KeyFlags keys;
   SDL_Point cameraMoveLastPos;
   int tileSize = 32;
-  TileCanvas canvas(mainWindow,0,0,3000,500,tileSize);
-  canvas.setBackgroundColor({0xFF,0xFF,0xFF,0xFF});
   mainWindow->show();
   int currentTile = 1;
   SDL_Rect menuView;
   SDL_Rect editorView;
   defineViews(mainWindow,menuView,editorView);
+  TileCanvas canvas(mainWindow,(editorView.w-canvasWidth)/2,(editorView.h-canvasHeight)/2,canvasWidth,canvasHeight,tileSize);
+  canvas.setBackgroundColor(colors.canvasBackground);
   ButtonMenu tileMenu(mainWindow, TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2);
   tileMenu.setCameraScrollSpeed(TileMenuScrollSpeed);
   Camera editorCamera(0,0,editorView.w,editorView.h);
@@ -118,7 +122,12 @@ void App::run()
   bool quit = false;
   generateButtons(buttonList,{
     SpriteLoadCallback(idToTextureName,mainWindow,regenerateMenu),
-    [&quit](const GuiElement&){ quit = true; }
+    [&quit](const GuiElement&){ quit = true; },
+    [&canvas](const GuiElement&){
+      std::wstring path;
+      if(!(path = FileSystemExplorer::openFile(L"Select canvas background")).empty())
+        canvas.setBackgroundTexture(path);
+    }
   }, colors);
   Timer capTimer;
   SDL_Event e;
@@ -245,7 +254,7 @@ void App::run()
     mainWindow->fillRect(menuView);
     mainWindow->setColor(colors.menuBorder);
     mainWindow->drawRect(menuView);
-    mainWindow->setColor({0xAA,0xAA,0xAA,0xFF});
+    mainWindow->setColor(colors.editorBackground);
     mainWindow->fillRect(editorView);
     mainWindow->setColor(prev);
     tileMenu.render();

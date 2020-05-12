@@ -10,6 +10,7 @@
 #include"tile.h"
 #include"selectionBox.h"
 #include"camera.h"
+#include"texture.h"
 
 class TileCanvas : public GuiElement {
 public:
@@ -22,10 +23,15 @@ public:
   void render() const override;
   void render(const Camera &cam) const;
   void updateTileId(int oldId, int newId);
+  void setBackgroundTexture(const std::wstring &path);
+  void setBackgroundColor(const SDL_Color&) override;
+  void clearBackgroundTexture() { backgroundTextureIsSet = false; }
 private:
   std::size_t tileDoesExistAt(int x, int y) const;
   std::vector<std::pair<int,Tile>> tiles;
   int tileSize;
+  bool backgroundTextureIsSet = false;
+  Texture backgroundTexture;
 };
 
 #endif

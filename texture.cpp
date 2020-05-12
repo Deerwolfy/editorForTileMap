@@ -33,6 +33,22 @@ void Texture::updateTextureFromSurface(SDL_Renderer *renderer)
   SDL_SetTextureBlendMode(texture.get(),SDL_BLENDMODE_BLEND);
   width = surface.get()->w;
   height = surface.get()->h;
+  xScaleDiff = 0;
+  yScaleDiff = 0;
+}
+
+void Texture::updateTextureFromSurface(SDL_Renderer *renderer, std::shared_ptr<SDL_Surface> sourceSurface)
+{
+  std::shared_ptr<SDL_Texture> tempTexture(SDL_CreateTextureFromSurface(renderer,sourceSurface.get()),
+    SDL_DestroyTexture);
+  if(tempTexture == nullptr){
+    std::cout << "Failed to create texture, reason: " << SDL_GetError() << std::endl;
+    return;
+  }
+  texture = tempTexture;
+  SDL_SetTextureBlendMode(texture.get(),SDL_BLENDMODE_BLEND);
+  width = sourceSurface.get()->w;
+  height = sourceSurface.get()->h;
 }
 
 void Texture::loadText(SDL_Renderer *renderer, const Font &font, const std::string &text)
@@ -68,16 +84,35 @@ Texture Texture::copy(SDL_Renderer *renderer) const
   return Texture(renderer,surface);
 }
 
-void Texture::resize(SDL_Renderer *renderer, int w, int h)
+void Texture::resize(SDL_Renderer *renderer,int w, int h)
+{
+  std::shared_ptr<SDL_Surface> resizedSurf = resizeSurface(w,h);
+  if(!resizedSurf)
+    return;
+  xScaleDiff = w-width;
+  yScaleDiff = h-height;
+  updateTextureFromSurface(renderer,resizedSurf);
+}
+
+void Texture::resizeApply(SDL_Renderer *renderer,int w, int h)
+{
+  std::shared_ptr<SDL_Surface> resizedSurf = resizeSurface(w,h);
+  if(!resizedSurf)
+    return;
+  surface = resizedSurf;
+  updateTextureFromSurface(renderer);
+}
+
+std::shared_ptr<SDL_Surface> Texture::resizeSurface(int w, int h)
 {
   if(w <= 0 || h <= 0){
     std::cout << "Destination texture size must be bigger than zero. Current: "
     << w << "x" << h << std::endl;
-    return;
+    return nullptr;
   }
   if(surface == nullptr){
     std::cout << "No texture to resize" << std::endl;
-    return;
+    return nullptr;
   }
   std::shared_ptr<SDL_Surface> destSurf(SDL_CreateRGBSurfaceWithFormat(0,w,h,32,SDL_PIXELFORMAT_RGBA32),SDL_FreeSurface);
   std::shared_ptr<SDL_Surface> sourceSurf(SDL_ConvertSurfaceFormat(surface.get(),SDL_PIXELFORMAT_RGBA32,0),SDL_FreeSurface);
@@ -127,8 +162,7 @@ void Texture::resize(SDL_Renderer *renderer, int w, int h)
   SDL_UnlockSurface(sourceSurf.get());
   sourcePixels = nullptr;
   destPixels = nullptr;
-  surface = destSurf;
-  updateTextureFromSurface(renderer);
+  return destSurf;
 }
 
 Uint8 Texture::lerp(Uint8 left, Uint8 right, double target) const
@@ -143,4 +177,11 @@ Uint32 Texture::getSourcePixel(std::shared_ptr<SDL_Surface> surf, int x, int y) 
   if(y >= surf.get()->h)
     y -= y-surf.get()->h+1;
   return static_cast<Uint32*>(surf.get()->pixels)[x+y*surf.get()->pitch/4];
+}
+
+void Texture::reload(SDL_Renderer *renderer)
+{
+  updateTextureFromSurface(renderer);
+  xScaleDiff = 0;
+  yScaleDiff = 0;
 }

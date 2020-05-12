@@ -1,12 +1,13 @@
 #include"tileCanvas.h"
-#include"texture.h"
 #include"collisionDetector.h"
+#include<locale>
+#include<codecvt>
 
 void TileCanvas::placeTiles(const SelectionBox &selection, const Camera &cam, const Texture &texture, int id)
 {
   SDL_Point origin = selection.getOrigin(cam);
-  int xOffset = origin.x%tileSize;
-  int yOffset = origin.y%tileSize;
+  int xOffset = (origin.x-frame.x)%tileSize;
+  int yOffset = (origin.y-frame.y)%tileSize;
   int startX = origin.x - xOffset;
   int countX = (selection.getWidth()+xOffset)/tileSize + 1;
   int w = selection.getWidth();
@@ -50,8 +51,8 @@ void TileCanvas::removeTiles(const SelectionBox &selection, const Camera &cam)
 void TileCanvas::placeTiles(const SelectionBox &selection, const Texture &texture, int id)
 {
   SDL_Point origin = selection.getOrigin();
-  int xOffset = origin.x%tileSize;
-  int yOffset = origin.y%tileSize;
+  int xOffset = (origin.x-frame.x)%tileSize;
+  int yOffset = (origin.y-frame.y)%tileSize;
   int startX = origin.x - xOffset;
   int countX = (selection.getWidth()+xOffset)/tileSize + 1;
   int w = selection.getWidth();
@@ -116,14 +117,20 @@ void TileCanvas::render(const Camera &cam) const
     parentWindow->setColor(borderColor);
     parentWindow->drawRect(relativeFrame);
   }
+  parentWindow->setClip(&relativeFrame);
+  if(backgroundTextureIsSet){
+    backgroundTexture.render(parentWindow->getRenderer(),relativeFrame.x,relativeFrame.y);
+  }
   for(const auto &tile : tiles)
     tile.second.render(parentWindow->getRenderer(),cam);
+  parentWindow->setClip();
   parentWindow->setColor(prev);
 }
 
 void TileCanvas::render() const
 {
   SDL_Color prev = parentWindow->getColor();
+  SDL_Rect nonConstFrame = frame;
   if(backgroundColorIsSet){
     parentWindow->setColor(backgroundColor);
     parentWindow->fillRect(frame);
@@ -132,8 +139,13 @@ void TileCanvas::render() const
     parentWindow->setColor(borderColor);
     parentWindow->drawRect(frame);
   }
+  parentWindow->setClip(&nonConstFrame);
+  if(backgroundTextureIsSet){
+    backgroundTexture.render(parentWindow->getRenderer(),frame.x,frame.y);
+  }
   for(const auto &tile : tiles)
     tile.second.render(parentWindow->getRenderer());
+  parentWindow->setClip();
   parentWindow->setColor(prev);
 }
 
@@ -142,4 +154,19 @@ void TileCanvas::updateTileId(int oldId, int newId)
   for(auto &tile : tiles)
     if(tile.first == oldId)
       tile.first = newId;
+}
+
+void TileCanvas::setBackgroundTexture(const std::wstring &path)
+{
+  std::string pathNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(path);
+  backgroundTexture.loadImg(parentWindow->getRenderer(), pathNarrow);
+  backgroundTextureIsSet = true;
+  clearBackgoundColor();
+}
+
+void TileCanvas::setBackgroundColor(const SDL_Color &color)
+{
+  backgroundColor = color;
+  backgroundColorIsSet = true;
+  clearBackgroundTexture();
 }
