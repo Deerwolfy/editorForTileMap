@@ -4,7 +4,7 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/vc_dev_lib/include/**"
+                "D:/dev_libs/sdl/include/**"
             ],
             "defines": [
                 "_DEBUG",
@@ -15,7 +15,7 @@
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.24.28314/bin/Hostx64/x64/cl.exe",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "msvc-x86"
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "version": 4
