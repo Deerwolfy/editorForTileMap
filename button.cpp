@@ -7,7 +7,7 @@ void Button::setText(const Font &font, const std::string &t)
   std::string newText = t;
   if(textAreaWidth != -1){
     frame.w += textAreaWidth;
-    if(textWidth >= textAreaWidth){
+    if(textWidth >= textAreaWidth){ // Fit text to text area width and add dots if exceed
       int perChar = textWidth/newText.length();
       int numOfChars = textAreaWidth/perChar;
       newText = newText.substr(0,numOfChars-4);
@@ -17,7 +17,7 @@ void Button::setText(const Font &font, const std::string &t)
   else
     frame.w += textWidth;
   text.loadText(parentWindow->getRenderer(),font,newText);
-  if(iconIsSet){
+  if(iconIsSet){ // Add icon and adjust button height
     if(text.getHeight() > icon.getHeight())
       frame.h += text.getHeight() - icon.getHeight();
     textOffsetY = icon.getHeight()/2 - text.getHeight()/2;
@@ -43,7 +43,7 @@ void Button::setHoverColor(const SDL_Color &color)
 
 std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int iconRightPadding)
 {
-  if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){
+  if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){ // Ajust icon dimensions to cap, keep scale
     if(iconTexture.getWidth() > iconTexture.getHeight()){
       double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
       iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension,maxDimension*ratio);
@@ -57,14 +57,14 @@ std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int i
     }
   }
   icon = iconTexture;
-  if(text.getHeight() < iconTexture.getHeight()){
+  if(text.getHeight() < iconTexture.getHeight()){ // Ajust button height
     frame.h += iconTexture.getHeight() - text.getHeight();
   }
   frame.w += iconTexture.getWidth() + rightPadding;
   textOffsetX = iconTexture.getWidth() + rightPadding;
   textOffsetY = iconTexture.getHeight()/2 - text.getHeight()/2;
   iconIsSet = true;
-  return std::make_pair(iconTexture.getWidth(),iconTexture.getHeight());
+  return std::make_pair(iconTexture.getWidth(),iconTexture.getHeight()); // Return new used dimensions of icon
 }
 
 void Button::setTopPadding(int padding)

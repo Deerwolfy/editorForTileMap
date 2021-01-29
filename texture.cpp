@@ -1,6 +1,6 @@
 #include"texture.h"
+#include"errorHandler.h"
 #include<SDL_image.h>
-#include<iostream>
 
 struct PixelData {
   Uint8 r;
@@ -13,8 +13,7 @@ void Texture::loadImg(SDL_Renderer *renderer, const std::string &path)
 {
   std::shared_ptr<SDL_Surface> tempSurf(IMG_Load(path.c_str()),SDL_FreeSurface);
   if(tempSurf == nullptr){
-    std::cout << "Failed to load image " << path <<
-                 " reason: " << IMG_GetError() << std::endl;
+    ErrorHandler::createMessage("Failed to load image " + path + " reason: " + IMG_GetError(),ErrorHandler::MessageLevel::WARNING);
     return;
   }
   surface = tempSurf;
@@ -26,7 +25,7 @@ void Texture::updateTextureFromSurface(SDL_Renderer *renderer)
   std::shared_ptr<SDL_Texture> tempTexture(SDL_CreateTextureFromSurface(renderer,surface.get()),
     SDL_DestroyTexture);
   if(tempTexture == nullptr){
-    std::cout << "Failed to create texture, reason: " << SDL_GetError() << std::endl;
+    ErrorHandler::createMessage(std::string("Failed to create texture, reason: ") + SDL_GetError(),ErrorHandler::MessageLevel::WARNING);
     return;
   }
   texture = tempTexture;
@@ -42,7 +41,7 @@ void Texture::updateTextureFromSurface(SDL_Renderer *renderer, std::shared_ptr<S
   std::shared_ptr<SDL_Texture> tempTexture(SDL_CreateTextureFromSurface(renderer,sourceSurface.get()),
     SDL_DestroyTexture);
   if(tempTexture == nullptr){
-    std::cout << "Failed to create texture, reason: " << SDL_GetError() << std::endl;
+    ErrorHandler::createMessage(std::string("Failed to create texture, reason: ") + SDL_GetError(),ErrorHandler::MessageLevel::WARNING);
     return;
   }
   texture = tempTexture;
@@ -55,7 +54,7 @@ void Texture::loadText(SDL_Renderer *renderer, const Font &font, const std::stri
 {
   std::shared_ptr<SDL_Surface> tempSurface(TTF_RenderText_Blended(font.getFont().get(),text.c_str(),font.getColor()),SDL_FreeSurface);
   if(tempSurface == nullptr){
-    std::cout << "Failed to render text" << std::endl;
+    ErrorHandler::createMessage(std::string("Failed to render text") + TTF_GetError(),ErrorHandler::MessageLevel::WARNING);
     return;
   }
   surface = tempSurface;
@@ -106,12 +105,12 @@ void Texture::resizeApply(SDL_Renderer *renderer,int w, int h)
 std::shared_ptr<SDL_Surface> Texture::resizeSurface(int w, int h)
 {
   if(w <= 0 || h <= 0){
-    std::cout << "Destination texture size must be bigger than zero. Current: "
-    << w << "x" << h << std::endl;
+    ErrorHandler::createMessage("Destination texture size must be bigger than zero. Current: "
+      + std::to_string(w) + "x" + std::to_string(h),ErrorHandler::MessageLevel::WARNING);
     return nullptr;
   }
   if(surface == nullptr){
-    std::cout << "No texture to resize" << std::endl;
+    ErrorHandler::createMessage("No texture to resize",ErrorHandler::MessageLevel::WARNING);
     return nullptr;
   }
   std::shared_ptr<SDL_Surface> destSurf(SDL_CreateRGBSurfaceWithFormat(0,w,h,32,SDL_PIXELFORMAT_RGBA32),SDL_FreeSurface);

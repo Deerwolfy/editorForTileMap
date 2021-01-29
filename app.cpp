@@ -84,7 +84,7 @@ void App::run()
   std::shared_ptr<WindowWrapper> mainWindow = std::make_shared<WindowWrapper>(winWidth,winHeight);
   std::shared_ptr<PopupInputBox> popup;
   KeyFlags keys;
-  SDL_Point cameraMoveLastPos;
+  SDL_Point cameraMoveLastPos; // Camera position for calculating view move difference
   int tileSize = 32;
   mainWindow->show();
   int currentTile = 1;
@@ -101,22 +101,21 @@ void App::run()
   SelectionBox leftMouseBox(mainWindow,colors.leftSelection,colors.leftSelectionBorder);
   SelectionBox rightMouseBox(mainWindow,colors.rightSelection,colors.rightSelectionBorder);
   bool regenerateMenu = false;
-  tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); });
-  tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&canvas,&regenerateMenu](const GuiElement &e)->void{
+  tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); }); // Callback to select tile
+  tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&canvas,&regenerateMenu](const GuiElement &e)->void{ // Callback to create popup
     popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
     popup->setBackgroundColor(colors.popupBackground);
     popup->setBorderColor(colors.popupBorder);
     popup->setActionButtonLabel("Set");
     popup->setTitle("Set tile id");
     popup->setElementId(e.getElementId());
-    popup->setActionCallback([&regenerateMenu,&popup,&mainWindow,&idToTextureName,&canvas] (const GuiElement&)->void
-    {
+    popup->setActionCallback([&regenerateMenu,&popup,&mainWindow,&idToTextureName,&canvas] (const GuiElement&)->void{ // Callback to change tile id
       ChangeTileIdCallback callback(mainWindow,idToTextureName,canvas);
       callback(*popup.get());
       popup->markDone();
       regenerateMenu = true;
-      });
-      popup->setCloseCallback([&popup](const GuiElement&){popup->markDone();});
+    });
+    popup->setCloseCallback([&popup](const GuiElement&){popup->markDone();}); // Callback to mark popup as done
   });
   bool tilesLoad = false;
   bool quit = false;
@@ -182,12 +181,12 @@ void App::run()
           }
           else if(!buttonList.isOpen()){
             tileMenu.mouseMove(e);
-            if(keys.shift){
+            if(keys.shift){ // Move canvas camera
               if(keys.leftMouse)
                 editorCamera.moveBy(cameraMoveLastPos.x-e.motion.x,cameraMoveLastPos.y-e.motion.y);
               cameraMoveLastPos.x = e.motion.x;
               cameraMoveLastPos.y = e.motion.y;
-            } else {
+            } else { // Resize selection area
               if(leftMouseBox.isHold()){
                 leftMouseBox.setEnd(e.motion.x - editorView.x,e.motion.y - editorView.y);
               }
@@ -210,17 +209,17 @@ void App::run()
             break;
             case SDLK_ESCAPE:
               if(popup)
-                popup->markDone();
+                popup->markDone(); // Mark popup for close
             break;
             case SDLK_RETURN:
               if(popup)
-                popup->confirm();
+                popup->confirm(); // Execute popup action
             break;
             case SDLK_LSHIFT: case SDLK_RSHIFT:
               keys.shift = true;
               int currentMouseX, currentMouseY;
               SDL_GetMouseState(&currentMouseX,&currentMouseY);
-              if(Collision::between({currentMouseX, currentMouseY}, editorView)){
+              if(Collision::between({currentMouseX, currentMouseY}, editorView)){ // Record comera position for calculating distance to move
                 cameraMoveLastPos.x = currentMouseX;
                 cameraMoveLastPos.y = currentMouseY;
               }

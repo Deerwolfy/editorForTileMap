@@ -13,7 +13,7 @@ void ButtonMenu::generate(const std::map<int,TextureName> &textures, const AppCo
   int maxTextWidth;
   Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
   buttons.clear();
-  for(const auto &t : textures){
+  for(const auto &t : textures){ // Create buttons
     buttons.emplace_back(parentWindow,frame.x+currentX,currentY,padding,padding);
     Button &current = buttons.back();
     auto iconDimensions = current.setIcon(t.second.texture,iconMaxSide,iconSep);

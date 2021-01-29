@@ -73,6 +73,7 @@
         "sstream": "cpp",
         "cinttypes": "cpp",
         "queue": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "compare": "cpp"
     }
 }

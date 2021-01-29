@@ -3,7 +3,7 @@
 PopupInputBox::PopupInputBox(std::shared_ptr<WindowWrapper> w, int width, int height, const std::string &fontPath, const AppColors &colors):
     GuiElement(w,(w->getWidth()-width)/2,(w->getHeight()-height)/2,width,height),
     inputField(w,frame.x+width/6,frame.y+height/3,width*4/6,height/4,fontPath,height/6,colors.textFieldText), closeButton(w,frame.x+width,frame.y,0,5),
-    actionButton(w,frame.x+width/2,frame.y+height*2/3,5,5)
+    actionButton(w,frame.x+width/2,frame.y+height*2/3,5,5) // Create popup with hardcoded dimension values (might add proper functions in future)
 {
   closeButton.setText(inputField.getFont(),"X");
   closeButton.setX(frame.x+width-closeButton.getWidth());

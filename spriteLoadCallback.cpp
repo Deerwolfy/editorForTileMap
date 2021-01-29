@@ -2,6 +2,7 @@
 #include<iostream>
 #include<utility>
 #include"texture.h"
+#include"errorHandler.h"
 #include<windows.h>
 #include<string>
 #include<vector>
@@ -21,7 +22,7 @@ void SpriteLoadCallback::operator()(const GuiElement&)
   WIN32_FIND_DATAW data;
   HANDLE dHandle = FindFirstFileW(filePath.c_str(),&data);
   if(dHandle == INVALID_HANDLE_VALUE){
-    std::wcout << "Can't open directory" << path << std::endl;
+    ErrorHandler::createMessage(L"Can't open directory" + path,ErrorHandler::MessageLevel::WARNING);
     return;
   }
   int spriteCount = 0;
@@ -35,14 +36,14 @@ void SpriteLoadCallback::operator()(const GuiElement&)
     if(formatIndex != std::string::npos)
       format = fileName.substr(formatIndex, formatLength);
     if(format == L".png" || format == L".jpg"){
-      std::wcout << "Loading " << path + fileName << std::endl;
+      ErrorHandler::createMessage(L"Loading " + path + fileName,ErrorHandler::MessageLevel::INFO);
       std::string fileNameNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(fileName);
       std::string pathNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(path);
       idToTextureName.emplace(spriteCount,TextureName{Texture(window->getRenderer(),pathNarrow + fileNameNarrow), fileNameNarrow});
       ++spriteCount;
     }
     else
-      std::wcout << L"Unsupported format: " << format << std::endl;
+      ErrorHandler::createMessage(L"Unsupported format: " + format,ErrorHandler::MessageLevel::WARNING);
   } while(FindNextFileW(dHandle,&data) != 0);
   regenerate = true;
   FindClose(dHandle);
