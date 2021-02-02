@@ -11,9 +11,9 @@ public:
   Tile(const Texture &texture): texture(texture), x(0), y(0) { }
   Tile(const Texture &texture, int x, int y):
     texture(texture), x(x), y(y) { }
-  void render(SDL_Renderer *renderer) const { texture.render(renderer,x,y); }
-  void render(SDL_Renderer *renderer, const Camera &camera) const
-    { texture.render(renderer,camera.getRelativeX(x),camera.getRelativeY(y)); }
+  void render(WindowWrapper &win) const { texture.render(win,x,y); }
+  void render(WindowWrapper &win, const Camera &camera) const
+    { texture.render(win,camera.getRelativeX(x),camera.getRelativeY(y)); }
   int getX() const { return x; }
   int getY() const { return y; }
   void setX(int x) { this->x = x; }

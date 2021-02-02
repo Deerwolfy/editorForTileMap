@@ -16,7 +16,7 @@ void Button::setText(const Font &font, const std::string &t)
   }
   else
     frame.w += textWidth;
-  text.loadText(parentWindow->getRenderer(),font,newText);
+  text.loadText(*parentWindow,font,newText);
   if(iconIsSet){ // Add icon and adjust button height
     if(text.getHeight() > icon.getHeight())
       frame.h += text.getHeight() - icon.getHeight();
@@ -46,14 +46,14 @@ std::pair<int,int> Button::setIcon(Texture iconTexture,  int maxDimension, int i
   if(iconTexture.getWidth() != maxDimension || iconTexture.getHeight() != maxDimension){ // Ajust icon dimensions to cap, keep scale
     if(iconTexture.getWidth() > iconTexture.getHeight()){
       double ratio = iconTexture.getHeight()/static_cast<double>(iconTexture.getWidth());
-      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension,maxDimension*ratio);
+      iconTexture.resizeApply(*parentWindow,maxDimension,maxDimension*ratio);
     }
     else if(iconTexture.getWidth() < iconTexture.getHeight()){
       double ratio = iconTexture.getWidth()/static_cast<double>(iconTexture.getHeight());
-      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension*ratio,maxDimension);
+      iconTexture.resizeApply(*parentWindow,maxDimension*ratio,maxDimension);
     }
     else{
-      iconTexture.resizeApply(parentWindow->getRenderer(),maxDimension,maxDimension);
+      iconTexture.resizeApply(*parentWindow,maxDimension,maxDimension);
     }
   }
   icon = iconTexture;
@@ -102,9 +102,9 @@ void Button::render() const
     SDL_RenderDrawRect(parentWindow->getRenderer(),&frame);
   }
   if(iconIsSet)
-    icon.render(parentWindow->getRenderer(),frame.x+leftPadding,frame.y+topPadding);
+    icon.render(*parentWindow,frame.x+leftPadding,frame.y+topPadding);
   if(textIsSet)
-    text.render(parentWindow->getRenderer(),frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
+    text.render(*parentWindow,frame.x+leftPadding+textOffsetX,frame.y+topPadding+textOffsetY);
   parentWindow->setColor(prev);
 }
 
@@ -125,9 +125,9 @@ void Button::render(const Camera &camera) const
     SDL_RenderDrawRect(parentWindow->getRenderer(),&relativeFrame);
   }
   if(iconIsSet)
-    icon.render(parentWindow->getRenderer(),relativeFrame.x+leftPadding,relativeFrame.y+topPadding);
+    icon.render(*parentWindow,relativeFrame.x+leftPadding,relativeFrame.y+topPadding);
   if(textIsSet)
-    text.render(parentWindow->getRenderer(),relativeFrame.x+leftPadding+textOffsetX,relativeFrame.y+topPadding+textOffsetY);
+    text.render(*parentWindow,relativeFrame.x+leftPadding+textOffsetX,relativeFrame.y+topPadding+textOffsetY);
   parentWindow->setColor(prev);
 }
 

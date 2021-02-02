@@ -16,7 +16,7 @@ public:
   PopupInputBox(std::shared_ptr<WindowWrapper> w, int width, int height, const std::string &fontPath, const AppColors &colors);
   void setActionCallback(std::function<void(const GuiElement&)> callback) { actionButton.setLeftClickCallback(callback); }
   void setCloseCallback(std::function<void(const GuiElement&)> callback) { closeButton.setLeftClickCallback(callback); }
-  void setTitle(const std::string &title) { (this->title).loadText(parentWindow->getRenderer(),inputField.getFont(),title); titleIsSet = true; }
+  void setTitle(const std::string &title) { (this->title).loadText(*parentWindow,inputField.getFont(),title); titleIsSet = true; }
   void setActionButtonLabel(const std::string &label);
   void click(const SDL_Event&) const;
   void mouseMove(const SDL_Event&);

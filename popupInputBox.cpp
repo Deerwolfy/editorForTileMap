@@ -36,7 +36,7 @@ void PopupInputBox::render() const
     parentWindow->setColor(borderColor);
   }
   if(titleIsSet)
-    title.render(parentWindow->getRenderer(),frame.x+5,frame.y);
+    title.render(*parentWindow,frame.x+5,frame.y);
   parentWindow->setColor(prev);
   closeButton.render();
   actionButton.render();

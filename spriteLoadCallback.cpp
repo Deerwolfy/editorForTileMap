@@ -39,7 +39,7 @@ void SpriteLoadCallback::operator()(const GuiElement&)
       ErrorHandler::createMessage(L"Loading " + path + fileName,ErrorHandler::MessageLevel::INFO);
       std::string fileNameNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(fileName);
       std::string pathNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(path);
-      idToTextureName.emplace(spriteCount,TextureName{Texture(window->getRenderer(),pathNarrow + fileNameNarrow), fileNameNarrow});
+      idToTextureName.emplace(spriteCount,TextureName{Texture(*window,pathNarrow + fileNameNarrow), fileNameNarrow});
       ++spriteCount;
     }
     else

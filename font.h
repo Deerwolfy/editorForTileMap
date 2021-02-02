@@ -10,7 +10,7 @@
 class Font {
 public:
   Font(const std::string &fontPath, int pSize, SDL_Color color = {0x00,0x00,0x00,0xFF});
-  void loadFont(const std::string&);
+  void loadFont(const std::string&,int);
   SDL_Color getColor() const { return color; }
   std::shared_ptr<TTF_Font> getFont() const { return font; }
   std::pair<int,int> getTextWH(const std::string&) const;

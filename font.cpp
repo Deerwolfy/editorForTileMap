@@ -15,3 +15,8 @@ std::pair<int,int> Font::getTextWH(const std::string &text) const
     return std::make_pair(w,h);
   return std::make_pair(0,0);
 }
+
+void Font::loadFont(const std::string &path, int size)
+{
+  font = std::shared_ptr<TTF_Font>(TTF_OpenFont(path.c_str(), size),TTF_CloseFont);
+}

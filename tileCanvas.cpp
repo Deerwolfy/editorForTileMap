@@ -119,10 +119,10 @@ void TileCanvas::render(const Camera &cam) const
   }
   parentWindow->setClip(&relativeFrame);
   if(backgroundTextureIsSet){
-    backgroundTexture.render(parentWindow->getRenderer(),relativeFrame.x,relativeFrame.y);
+    backgroundTexture.render(*parentWindow,relativeFrame.x,relativeFrame.y);
   }
   for(const auto &tile : tiles)
-    tile.second.render(parentWindow->getRenderer(),cam);
+    tile.second.render(*parentWindow,cam);
   parentWindow->setClip();
   parentWindow->setColor(prev);
 }
@@ -141,10 +141,10 @@ void TileCanvas::render() const
   }
   parentWindow->setClip(&nonConstFrame);
   if(backgroundTextureIsSet){
-    backgroundTexture.render(parentWindow->getRenderer(),frame.x,frame.y);
+    backgroundTexture.render(*parentWindow,frame.x,frame.y);
   }
   for(const auto &tile : tiles)
-    tile.second.render(parentWindow->getRenderer());
+    tile.second.render(*parentWindow);
   parentWindow->setClip();
   parentWindow->setColor(prev);
 }
@@ -159,7 +159,7 @@ void TileCanvas::updateTileId(int oldId, int newId)
 void TileCanvas::setBackgroundTexture(const std::wstring &path)
 {
   std::string pathNarrow = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(path);
-  backgroundTexture.loadImg(parentWindow->getRenderer(), pathNarrow);
+  backgroundTexture.loadImg(*parentWindow, pathNarrow);
   backgroundTextureIsSet = true;
   clearBackgoundColor();
 }
