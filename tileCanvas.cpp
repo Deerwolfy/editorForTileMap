@@ -170,3 +170,13 @@ void TileCanvas::setBackgroundColor(const SDL_Color &color)
   backgroundColorIsSet = true;
   clearBackgroundTexture();
 }
+
+void TileCanvas::scaleUp(double coefficient)
+{
+
+}
+
+void TileCanvas::scaleDown(double coefficient)
+{
+  
+}

@@ -1,4 +1,5 @@
 #include"windowWrapper.h"
+#include"errorHandler.h"
 #include<stdexcept>
 #include<string>
 
@@ -39,4 +40,24 @@ SDL_Color WindowWrapper::getColor() const
   SDL_Color color;
   SDL_GetRenderDrawColor(renderer,&color.r,&color.g,&color.b,&color.a);
   return color;
+}
+
+bool WindowWrapper::textureTargetSupport() const
+{
+  SDL_RendererInfo info;
+  SDL_GetRendererInfo(renderer,&info);
+  if(info.flags & SDL_RENDERER_TARGETTEXTURE){
+    return true;
+  }
+  return false;
+}
+
+void WindowWrapper::resetTarget()
+{
+  if(textureTargetSupport()){
+    SDL_SetRenderTarget(renderer,NULL);
+  }
+  else {
+    ErrorHandler::createMessage(std::string("Renderer does not support texture target, ") + SDL_GetError(),ErrorHandler::MessageLevel::WARNING);
+  }
 }

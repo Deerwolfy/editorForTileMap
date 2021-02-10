@@ -69,14 +69,10 @@ void ButtonMenu::mouseMove(const SDL_Event &e)
 
 void ButtonMenu::scroll(const SDL_Event &e)
 {
-  int currentMouseX, currentMouseY;
-  SDL_GetMouseState(&currentMouseX,&currentMouseY);
-  if(Collision::between({currentMouseX,currentMouseY}, frame)){
-    if(e.wheel.y > 0){
-      camera.moveUp();
-    }
-    else if(e.wheel.y < 0){
-      camera.moveDown();
-    }
+  if(e.wheel.y > 0){
+    camera.moveUp();
+  }
+  else if(e.wheel.y < 0){
+    camera.moveDown();
   }
 }

@@ -198,7 +198,19 @@ void App::run()
         break;
         case SDL_MOUSEWHEEL:
           if(!buttonList.isOpen() && !popup){
-            tileMenu.scroll(e);
+            int mousePosX = 0, mousePosY = 0;
+            SDL_GetMouseState(&mousePosX,&mousePosY);
+            if(Collision::between({mousePosX,mousePosY},menuView)){
+              tileMenu.scroll(e);
+            }
+            else if(Collision::between({mousePosX,mousePosY},editorView)){
+              if(e.wheel.y > 0){
+                canvas.scaleUp(canvasScaleCoef);
+              }
+              else if(e.wheel.y < 0){
+                canvas.scaleDown(canvasScaleCoef);
+              }
+            }
           }
         break;
         case SDL_KEYDOWN:
