@@ -79,8 +79,16 @@ void Texture::loadText(const WindowWrapper &win, const Font &font, const std::st
 
 Texture::Texture(const WindowWrapper &win, std::shared_ptr<SDL_Surface> surf)
 {
-  surface = surf;
-  updateTextureFromSurface(win);
+  surface = std::shared_ptr<SDL_Surface>(
+    SDL_CreateRGBSurfaceWithFormat(0,surf->w,surf->h,surf->format->BytesPerPixel,surf->format->format),
+  SDL_FreeSurface);
+  if(surface == nullptr){
+    ErrorHandler::createMessage(std::string("Cannot create texture, ") + SDL_GetError(),ErrorHandler::MessageLevel::WARNING);
+  }
+  else {
+    SDL_BlitSurface(surf.get(),NULL,surface.get(),NULL);
+    updateTextureFromSurface(win);
+  }
 }
 
 void Texture::render(const WindowWrapper &win, int x, int y, const SDL_Rect *clip, double angle,

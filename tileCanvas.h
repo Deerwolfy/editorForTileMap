@@ -26,15 +26,12 @@ public:
   void setBackgroundTexture(const std::wstring &path);
   void setBackgroundColor(const SDL_Color&) override;
   void clearBackgroundTexture() { backgroundTextureIsSet = false; }
-  void scaleUp(double coefficient);
-  void scaleDown(double coefficient);
 private:
   std::size_t tileDoesExistAt(int x, int y) const;
   std::vector<std::pair<int,Tile>> tiles;
   int tileSize;
   bool backgroundTextureIsSet = false;
   Texture backgroundTexture;
-  double currentScale = 1;
 };
 
 #endif
