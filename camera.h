@@ -30,6 +30,12 @@ public:
   void moveDown() { moveBy(0,yMovementSpeed); }
   void moveLeft() { moveBy(-xMovementSpeed,0); }
   void moveRight() { moveBy(xMovementSpeed,0); }
+  void setZoomSpeed(double speed) { zoomSpeed = speed; }
+  double getZoom() const { return zoom; }
+  void zoomIn() { zoom += zoomSpeed; if(zoom <= 0) zoom = zoomSpeed; }
+  void zoomOut() { zoom -= zoomSpeed; if(zoom <= 0) zoom = zoomSpeed; }
+  int getHeight() const { return camera.h; }
+  int getWidth() const { return camera.w; }
 private:
   SDL_Rect camera;
   int xLowerBound;
@@ -41,6 +47,8 @@ private:
   bool yBoundIsSet = false;
   int yMovementSpeed = 0;
   int xMovementSpeed = 0;
+  double zoom = 1;
+  double zoomSpeed = 0;
 };
 
 #endif

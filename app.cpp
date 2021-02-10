@@ -96,6 +96,7 @@ void App::run()
   ButtonMenu tileMenu(mainWindow, TilemenuXOffset,TileMenuYOffset,menuView.w-TilemenuXOffset*2,menuView.h-TileMenuYOffset*2);
   tileMenu.setCameraScrollSpeed(TileMenuScrollSpeed);
   Camera editorCamera(0,0,editorView.w,editorView.h);
+  editorCamera.setZoomSpeed(0.1);
   std::map<int,TextureName> idToTextureName;
   ListMenu buttonList(mainWindow,5,5,3,5);
   SelectionBox leftMouseBox(mainWindow,colors.leftSelection,colors.leftSelectionBorder);
@@ -205,10 +206,10 @@ void App::run()
             }
             else if(Collision::between({mousePosX,mousePosY},editorView)){
               if(e.wheel.y > 0){
-                canvas.scaleUp(canvasScaleCoef);
+                editorCamera.zoomIn();
               }
               else if(e.wheel.y < 0){
-                canvas.scaleDown(canvasScaleCoef);
+                editorCamera.zoomOut();
               }
             }
           }

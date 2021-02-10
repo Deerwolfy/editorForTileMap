@@ -29,6 +29,8 @@ public:
   int getXScaleDiff() const { return xScaleDiff; }
   void render(const WindowWrapper &win, int x, int y, const SDL_Rect *clip = nullptr, double angle = 0,
               const SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
+  void render(const WindowWrapper &win, const SDL_Rect *sclip, const SDL_Rect *dclip, double angle = 0,
+              const SDL_Point *center = nullptr, SDL_RendererFlip flip = SDL_FLIP_NONE) const;
   bool isEmpty() const { return texture == nullptr; }
   bool resize(const WindowWrapper&,int,int);
   bool resizeApply(const WindowWrapper&,int,int);

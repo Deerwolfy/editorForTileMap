@@ -32,7 +32,6 @@ private:
   const int TileMenuScrollSpeed = 30;
   const int TileMenuYOffset = 40;
   const int TilemenuXOffset = 20;
-  const double canvasScaleCoef = 0.5;
 };
 
 #endif

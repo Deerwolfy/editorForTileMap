@@ -13,6 +13,7 @@ void WindowWrapper::create()
   if(renderer == NULL){
     throwError("Unable to create renderer SDL_Error: ", SDL_GetError());
   }
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
   SDL_SetRenderDrawColor(renderer,0xFF,0xFF,0xFF,0xFF);
   SDL_SetRenderDrawBlendMode(renderer,SDL_BLENDMODE_BLEND);
 }

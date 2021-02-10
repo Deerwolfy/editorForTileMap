@@ -6,63 +6,41 @@
 void TileCanvas::placeTiles(const SelectionBox &selection, const Camera &cam, const Texture &texture, int id)
 {
   SDL_Point origin = selection.getOrigin(cam);
-  int xOffset = (origin.x-frame.x)%tileSize;
-  int yOffset = (origin.y-frame.y)%tileSize;
-  int startX = origin.x - xOffset;
-  int countX = (selection.getWidth()+xOffset)/tileSize + 1;
-  int w = selection.getWidth();
-  int currentY = origin.y - yOffset;
-  int countY = (selection.getHeight()+yOffset)/tileSize + 1;
-  while(countY--){
-    int currentX = startX;
-    int count = countX;
-    while(count--){
-      if(Collision::between({currentX,currentY},frame) && tileDoesExistAt(currentX,currentY) == tiles.size())
-        tiles.push_back(std::make_pair(id,Tile(texture,currentX,currentY)));
-      currentX += tileSize;
-    }
-    currentY += tileSize;
-  }
-}
-
-void TileCanvas::removeTiles(const SelectionBox &selection, const Camera &cam)
-{
-  SDL_Point origin = selection.getOrigin(cam);
-  int xOffset = origin.x%tileSize;
-  int yOffset = origin.y%tileSize;
-  int startX = origin.x - xOffset;
-  int countX = (selection.getWidth()+xOffset)/tileSize + 1;
-  int w = selection.getWidth();
-  int currentY = origin.y - yOffset;
-  int countY = (selection.getHeight()+yOffset)/tileSize + 1;
-  while(countY--){
-    int currentX = startX;
-    int count = countX;
-    while(count--){
-      std::size_t index = tileDoesExistAt(currentX,currentY);
-      if(index != tiles.size())
-        tiles.erase(std::begin(tiles) + index);
-        currentX += tileSize;
-      }
-    currentY += tileSize;
-  }
+  actualPlace({origin.x,origin.y,selection.getWidth(),selection.getHeight()},texture,id);
 }
 
 void TileCanvas::placeTiles(const SelectionBox &selection, const Texture &texture, int id)
 {
   SDL_Point origin = selection.getOrigin();
-  int xOffset = (origin.x-frame.x)%tileSize;
-  int yOffset = (origin.y-frame.y)%tileSize;
-  int startX = origin.x - xOffset;
-  int countX = (selection.getWidth()+xOffset)/tileSize + 1;
-  int w = selection.getWidth();
-  int currentY = origin.y - yOffset;
-  int countY = (selection.getHeight()+yOffset)/tileSize + 1;
+  actualPlace({origin.x,origin.y,selection.getWidth(),selection.getHeight()},texture,id);
+}
+
+void TileCanvas::removeTiles(const SelectionBox &selection, const Camera &cam)
+{
+  SDL_Point origin = selection.getOrigin(cam);
+  actualDelete({origin.x,origin.y,selection.getWidth(),selection.getHeight()});
+  
+}
+
+void TileCanvas::removeTiles(const SelectionBox &selection)
+{
+  SDL_Point origin = selection.getOrigin();
+  actualDelete({origin.x,origin.y,selection.getWidth(),selection.getHeight()});
+}
+
+void TileCanvas::actualPlace(const SDL_Rect &selection, const Texture &texture, int id)
+{
+  int xOffset = (selection.x-frame.x)%tileSize;
+  int yOffset = (selection.y-frame.y)%tileSize;
+  int startX = selection.x - frame.x - xOffset;
+  int countX = selection.w/tileSize + 1;
+  int countY = selection.h/tileSize + 1;
+  int currentY = selection.y - frame.y - yOffset;
   while(countY--){
     int currentX = startX;
     int count = countX;
     while(count--){
-      if(Collision::between({currentX,currentY},frame) && tileDoesExistAt(currentX,currentY) == tiles.size())
+      if(Collision::between({currentX,currentY},{0,0,frame.w,frame.h}) && tileDoesExistAt(currentX,currentY) == tiles.size())
         tiles.push_back(std::make_pair(id,Tile(texture,currentX,currentY)));
       currentX += tileSize;
     }
@@ -70,16 +48,14 @@ void TileCanvas::placeTiles(const SelectionBox &selection, const Texture &textur
   }
 }
 
-void TileCanvas::removeTiles(const SelectionBox &selection)
+void TileCanvas::actualDelete(const SDL_Rect &selection)
 {
-  SDL_Point origin = selection.getOrigin();
-  int xOffset = origin.x%tileSize;
-  int yOffset = origin.y%tileSize;
-  int startX = origin.x - xOffset;
-  int countX = (selection.getWidth()+xOffset)/tileSize + 1;
-  int w = selection.getWidth();
-  int currentY = origin.y - yOffset;
-  int countY = (selection.getHeight()+yOffset)/tileSize + 1;
+  int xOffset = selection.x%tileSize;
+  int yOffset = selection.y%tileSize;
+  int startX = selection.x - frame.x - xOffset;
+  int countX = selection.w/tileSize + 1;
+  int countY = selection.h/tileSize + 1;
+  int currentY = selection.y - frame.y - yOffset;
   while(countY--){
     int currentX = startX;
     int count = countX;
@@ -109,43 +85,51 @@ void TileCanvas::render(const Camera &cam) const
     return;
   SDL_Rect relativeFrame = cam.getRelativeRect(frame);
   SDL_Color prev = parentWindow->getColor();
+  SDL_Rect textureFrame = {0,0,frame.w,frame.h};
+  SDL_Rect dstFrame = relativeFrame;
+  if(cam.getZoom() != 1){
+    dstFrame.w *= cam.getZoom();
+    dstFrame.h *= cam.getZoom();
+  }
+  target.setAsTarget(*parentWindow);
   if(backgroundColorIsSet){
     parentWindow->setColor(backgroundColor);
-    parentWindow->fillRect(relativeFrame);
+    parentWindow->fillRect(textureFrame);
   }
   if(borderColorIsSet){
     parentWindow->setColor(borderColor);
-    parentWindow->drawRect(relativeFrame);
+    parentWindow->drawRect(textureFrame);
   }
-  parentWindow->setClip(&relativeFrame);
   if(backgroundTextureIsSet){
-    backgroundTexture.render(*parentWindow,relativeFrame.x,relativeFrame.y);
+    backgroundTexture.render(*parentWindow,0,0);
   }
   for(const auto &tile : tiles)
-    tile.second.render(*parentWindow,cam);
-  parentWindow->setClip();
+    tile.second.render(*parentWindow);
+  parentWindow->resetTarget();
+  target.render(*parentWindow,&textureFrame,&dstFrame);
   parentWindow->setColor(prev);
 }
 
 void TileCanvas::render() const
 {
   SDL_Color prev = parentWindow->getColor();
-  SDL_Rect nonConstFrame = frame;
+  SDL_Rect textureFrame = {0,0,frame.w,frame.h};
+  target.setAsTarget(*parentWindow);
   if(backgroundColorIsSet){
     parentWindow->setColor(backgroundColor);
-    parentWindow->fillRect(frame);
+    parentWindow->fillRect(textureFrame);
   }
   if(borderColorIsSet){
     parentWindow->setColor(borderColor);
-    parentWindow->drawRect(frame);
+    parentWindow->drawRect(textureFrame);
   }
-  parentWindow->setClip(&nonConstFrame);
   if(backgroundTextureIsSet){
-    backgroundTexture.render(*parentWindow,frame.x,frame.y);
+    backgroundTexture.render(*parentWindow,0,0);
   }
   for(const auto &tile : tiles)
     tile.second.render(*parentWindow);
-  parentWindow->setClip();
+  parentWindow->resetTarget();
+  target.render(*parentWindow,frame.x,frame.y,&textureFrame);
   parentWindow->setColor(prev);
 }
 

@@ -102,6 +102,12 @@ void Texture::render(const WindowWrapper &win, int x, int y, const SDL_Rect *cli
   SDL_RenderCopyEx(win.getRenderer(), texture.get(), clip, &renderRect, angle, center, flip);
 }
 
+void Texture::render(const WindowWrapper &win, const SDL_Rect *sclip, const SDL_Rect *dclip, double angle,
+                           const SDL_Point *center, SDL_RendererFlip flip) const
+{
+  SDL_RenderCopyEx(win.getRenderer(), texture.get(), sclip, dclip, angle, center, flip);
+}
+
 Texture Texture::copy(const WindowWrapper &win) const
 {
   return Texture(win,surface);
