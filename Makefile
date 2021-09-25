@@ -1,6 +1,6 @@
 OBJS = main.cpp app.cpp windowWrapper.cpp timer.cpp texture.cpp font.cpp button.cpp collisionDetector.cpp \
   spriteLoadCallback.cpp listMenu.cpp changeTileIdCallback.cpp selectionBox.cpp guiElement.cpp textField.cpp popupInputBox.cpp \
-  fileSystemExplorer.cpp
+  fileSystemExplorer.cpp camera.cpp errorHandler.cpp buttonMenu.cpp tileCanvas.cpp intersection.cpp
 CC = g++
 INCLUDE_PATHS = -IC:\mingw_dev_lib\include\SDL2
 LIBRARY_PATHS = -LC:\mingw_dev_lib\lib
