@@ -61,7 +61,7 @@ void App::defineViews(std::shared_ptr<WindowWrapper> w, SDL_Rect &menu, SDL_Rect
 
 void App::generateButtons(ListMenu &buttons, const Callbacks &callbacks, const AppColors &colors) const
 {
-  Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
+  Font buttonFont("fonts/NotoSans-Regular.ttf", 14, colors.buttonText);
   buttons.setTitle(buttonFont,"Editor");
   buttons.setBackgroundColor(colors.buttonBackground);
   buttons.setHoverColor(colors.buttonHover);
@@ -104,7 +104,7 @@ void App::run()
   bool regenerateMenu = false;
   tileMenu.setButtonsLeftCallback([&currentTile](const GuiElement &b)->void{ currentTile = b.getElementId(); }); // Callback to select tile
   tileMenu.setButtonsRightCallback([&popup,&colors,&mainWindow,&idToTextureName,&canvas,&regenerateMenu](const GuiElement &e)->void{ // Callback to create popup
-    popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"NotoSans-Regular.ttf",colors);
+    popup = std::make_shared<PopupInputBox>(mainWindow,300,125,"fonts/NotoSans-Regular.ttf",colors);
     popup->setBackgroundColor(colors.popupBackground);
     popup->setBorderColor(colors.popupBorder);
     popup->setActionButtonLabel("Set");

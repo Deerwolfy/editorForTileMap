@@ -11,7 +11,7 @@ void ButtonMenu::generate(const std::map<int,TextureName> &textures, const AppCo
   int TileMenuItemsMargin = 5;
   int buttonWidth = frame.w - currentX - currentX;
   int maxTextWidth;
-  Font buttonFont("NotoSans-Regular.ttf", 14, colors.buttonText);
+  Font buttonFont("fonts/NotoSans-Regular.ttf", 14, colors.buttonText);
   buttons.clear();
   for(const auto &t : textures){ // Create buttons
     buttons.emplace_back(parentWindow,frame.x+currentX,currentY,padding,padding);

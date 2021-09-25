@@ -13,6 +13,7 @@
 				"main.cpp", "app.cpp", "windowWrapper.cpp", "timer.cpp", "texture.cpp", "font.cpp", "button.cpp", "collisionDetector.cpp",
 				"spriteLoadCallback.cpp", "listMenu.cpp", "changeTileIdCallback.cpp", "selectionBox.cpp", "guiElement.cpp", "textField.cpp",
 				"popupInputBox.cpp",  "fileSystemExplorer.cpp", "camera.cpp", "errorHandler.cpp", "buttonMenu.cpp", "tileCanvas.cpp",
+				"intersection.cpp",
 				"/ID:\\dev_libs\\sdl\\include",
 				"/link",
 				"/LIBPATH:D:\\dev_libs\\sdl\\lib\\x64",

@@ -27,8 +27,10 @@ public:
   void setBackgroundColor(const SDL_Color&) override;
   void clearBackgroundTexture() { backgroundTextureIsSet = false; }
 private:
-  void actualPlace(const SDL_Rect &selection, const Texture &texture, int id);
-  void actualDelete(const SDL_Rect &selection);
+  void actualPlace(const SDL_Rect &region, const Texture &texture, int id);
+  void actualDelete(const SDL_Rect &region);
+  void getZoomedFrame(SDL_Rect&, double) const;
+  void revertZoomOnFrame(SDL_Rect&, double) const;
   std::size_t tileDoesExistAt(int x, int y) const;
   std::vector<std::pair<int,Tile>> tiles;
   int tileSize;

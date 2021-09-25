@@ -1,41 +1,66 @@
 #include"tileCanvas.h"
 #include"collisionDetector.h"
+#include"intersection.h"
 #include<locale>
 #include<codecvt>
+#include<cmath>
 
 void TileCanvas::placeTiles(const SelectionBox &selection, const Camera &cam, const Texture &texture, int id)
 {
-  SDL_Point origin = selection.getOrigin(cam);
-  actualPlace({origin.x,origin.y,selection.getWidth(),selection.getHeight()},texture,id);
+  SDL_Rect canvas = frame;
+  getZoomedFrame(canvas,cam.getZoom());
+  std::shared_ptr<SDL_Rect> intersection = Intersection::between(canvas,selection.getFrame(cam));
+  if(intersection == nullptr)
+    return;
+  revertZoomOnFrame(*intersection,cam.getZoom());
+  intersection->x -= frame.x;
+  intersection->y -= frame.y;
+  actualPlace(*intersection,texture,id);
 }
 
 void TileCanvas::placeTiles(const SelectionBox &selection, const Texture &texture, int id)
 {
-  SDL_Point origin = selection.getOrigin();
-  actualPlace({origin.x,origin.y,selection.getWidth(),selection.getHeight()},texture,id);
+  std::shared_ptr<SDL_Rect> region = Intersection::between(frame,selection.getFrame());
+  if(region == nullptr)
+    return;
+  region->x -= frame.x;
+  region->y -= frame.y;
+  actualPlace(*region,texture,id);
 }
 
 void TileCanvas::removeTiles(const SelectionBox &selection, const Camera &cam)
 {
-  SDL_Point origin = selection.getOrigin(cam);
-  actualDelete({origin.x,origin.y,selection.getWidth(),selection.getHeight()});
-  
+  SDL_Rect canvas = frame;
+  getZoomedFrame(canvas,cam.getZoom());
+  std::shared_ptr<SDL_Rect> intersection = Intersection::between(canvas,selection.getFrame(cam));
+  if(intersection == nullptr)
+    return;
+  revertZoomOnFrame(*intersection,cam.getZoom());
+  intersection->x -= frame.x;
+  intersection->y -= frame.y;
+  intersection->x = std::round(intersection->x*(1/cam.getZoom()));
+  intersection->y = std::round(intersection->y*(1/cam.getZoom()));
+  actualDelete(*intersection);
 }
 
 void TileCanvas::removeTiles(const SelectionBox &selection)
 {
-  SDL_Point origin = selection.getOrigin();
-  actualDelete({origin.x,origin.y,selection.getWidth(),selection.getHeight()});
+  std::shared_ptr<SDL_Rect> region = Intersection::between(frame,selection.getFrame());
+  if(region == nullptr)
+    return;
+  region->x -= frame.x;
+  region->y -= frame.y;
+  actualDelete(*region);
 }
 
-void TileCanvas::actualPlace(const SDL_Rect &selection, const Texture &texture, int id)
+void TileCanvas::actualPlace(const SDL_Rect &region, const Texture &texture, int id)
 {
-  int xOffset = (selection.x-frame.x)%tileSize;
-  int yOffset = (selection.y-frame.y)%tileSize;
-  int startX = selection.x - frame.x - xOffset;
-  int countX = selection.w/tileSize + 1;
-  int countY = selection.h/tileSize + 1;
-  int currentY = selection.y - frame.y - yOffset;
+  int xOffset = region.x%tileSize;
+  int yOffset = region.y%tileSize;
+  int startX = region.x - xOffset;
+  int countX = region.w/tileSize + 1;
+  int countY = region.h/tileSize + 1;
+  int currentY = region.y - yOffset;
   while(countY--){
     int currentX = startX;
     int count = countX;
@@ -48,14 +73,14 @@ void TileCanvas::actualPlace(const SDL_Rect &selection, const Texture &texture, 
   }
 }
 
-void TileCanvas::actualDelete(const SDL_Rect &selection)
+void TileCanvas::actualDelete(const SDL_Rect &region)
 {
-  int xOffset = selection.x%tileSize;
-  int yOffset = selection.y%tileSize;
-  int startX = selection.x - frame.x - xOffset;
-  int countX = selection.w/tileSize + 1;
-  int countY = selection.h/tileSize + 1;
-  int currentY = selection.y - frame.y - yOffset;
+  int xOffset = region.x%tileSize;
+  int yOffset = region.y%tileSize;
+  int startX = region.x - xOffset;
+  int countX = region.w/tileSize + 1;
+  int countY = region.h/tileSize + 1;
+  int currentY = region.y - yOffset;
   while(countY--){
     int currentX = startX;
     int count = countX;
@@ -83,14 +108,10 @@ void TileCanvas::render(const Camera &cam) const
 {
   if(!cam.isVisible(frame))
     return;
-  SDL_Rect relativeFrame = cam.getRelativeRect(frame);
   SDL_Color prev = parentWindow->getColor();
   SDL_Rect textureFrame = {0,0,frame.w,frame.h};
-  SDL_Rect dstFrame = relativeFrame;
-  if(cam.getZoom() != 1){
-    dstFrame.w *= cam.getZoom();
-    dstFrame.h *= cam.getZoom();
-  }
+  SDL_Rect dstFrame = cam.getRelativeRect(frame);
+  getZoomedFrame(dstFrame,cam.getZoom());
   target.setAsTarget(*parentWindow);
   if(backgroundColorIsSet){
     parentWindow->setColor(backgroundColor);
@@ -153,4 +174,28 @@ void TileCanvas::setBackgroundColor(const SDL_Color &color)
   backgroundColor = color;
   backgroundColorIsSet = true;
   clearBackgroundTexture();
+}
+
+void TileCanvas::getZoomedFrame(SDL_Rect &fr, double zoom) const
+{
+  if(zoom != 1){
+    int hDimGain = std::round((std::round(fr.w*zoom)-fr.w)/3);
+    int vDimGain = std::round((std::round(fr.h*zoom)-fr.h)/3);
+    fr.w += hDimGain*2;
+    fr.h += vDimGain*2;
+    fr.x -= hDimGain;
+    fr.y -= vDimGain;
+  }
+}
+
+void TileCanvas::revertZoomOnFrame(SDL_Rect &fr,double zoom) const
+{
+  if(zoom != 1){
+    int hDimGain = std::round((fr.w-std::round(fr.w*(1/zoom)))/3);
+    int vDimGain = std::round((fr.h-std::round(fr.h*(1/zoom)))/3);
+    fr.w -= hDimGain*2;
+    fr.h -= vDimGain*2;
+    fr.x += hDimGain;
+    fr.y += vDimGain;
+  }
 }

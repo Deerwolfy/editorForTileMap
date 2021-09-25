@@ -36,6 +36,7 @@ public:
   virtual void render() const = 0;
   void rightClick() const;
   void leftClick() const;
+  SDL_Rect getFrame() const { return frame; }
 protected:
   SDL_Rect frame;
   bool shown = true;

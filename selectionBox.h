@@ -16,6 +16,8 @@ public:
   void setEnd(int x, int y);
   SDL_Point getOrigin() const { return {frame.x,frame.y}; }
   SDL_Point getOrigin(const Camera &cam) const { return cam.mapPointInside({frame.x,frame.y}); }
+  using GuiElement::getFrame;
+  SDL_Rect getFrame(const Camera &cam) const { return cam.mapRectInside(frame); }
   void unhold() { hold = false; }
   bool isHold() { return hold; }
   void render() const override;
