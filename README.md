@@ -1,4 +1,4 @@
-# TileMapEditor
+# TileMapEditor (Work in progress)
 
 Editor for tiled game maps. Personal project for learning about gamedev.
 
